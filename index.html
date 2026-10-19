@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Data Science Arcade</title>
+<style>
+  :root{
+    --ink:#0d1b2a; --gold:#ffcb3d; --goldh:#fff1b8;
+    --text:#e9eef5; --dim:#9fb2c9; --line:#2e466b;
+    --panel:#121d30; --panel2:#18253b;
+    --wx:#3fb950; --wxbg:#122019; --wxline:#2e5a43;
+    --ad:#2f9bd6; --adbg:#132033; --adline:#2e466b;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html,body{height:100%}
+  body{
+    background:#08101c; color:var(--text);
+    font-family:"Courier New",ui-monospace,monospace; font-weight:bold; letter-spacing:.5px;
+    display:flex; align-items:flex-start; justify-content:center; padding:18px; image-rendering:pixelated;
+  }
+  .wrap{width:100%; max-width:980px}
+  h1,h2,h3{text-transform:uppercase; line-height:1.1}
+  .frame{border:4px solid var(--gold); background:var(--panel); box-shadow:0 0 0 4px #08101c, 6px 6px 0 0 #000; padding:20px}
+  .masthead{text-align:center; margin-bottom:6px}
+  .masthead h1{color:var(--gold); font-size:34px; letter-spacing:3px; text-shadow:3px 3px 0 #000}
+  .masthead .tag{color:var(--goldh); font-size:13px; letter-spacing:2px; margin-top:8px; text-transform:uppercase}
+  .masthead .blurb{color:var(--dim); font-size:12px; line-height:1.6; letter-spacing:0; text-transform:none; margin:12px auto 0; max-width:640px}
+  .rule{height:0; border-top:3px dotted var(--line); margin:18px 0}
+  .marquee{color:var(--goldh); font-size:11px; letter-spacing:2px; text-align:center; text-transform:uppercase; margin-bottom:16px}
+  .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px}
+  .cab{border:4px solid var(--line); background:var(--panel2); padding:0; display:flex; flex-direction:column; text-decoration:none; color:var(--text); box-shadow:4px 4px 0 0 #000; transition:transform .04s}
+  .cab:hover{transform:translate(-2px,-2px)}
+  .cab .screen{border-bottom:4px solid var(--line); padding:14px 14px 12px; min-height:112px}
+  .cab .concept{font-size:10px; letter-spacing:1px; text-transform:uppercase; margin-bottom:6px}
+  .cab h2{font-size:17px; letter-spacing:1px; margin-bottom:8px}
+  .cab p{font-size:11px; line-height:1.55; color:var(--dim); letter-spacing:0; text-transform:none}
+  .cab .coin{font-size:12px; letter-spacing:1px; text-transform:uppercase; padding:11px 14px; color:var(--ink)}
+  /* weather cabinet — green machine */
+  .cab.wx{border-color:var(--wxline); background:var(--wxbg)}
+  .cab.wx .screen{border-color:var(--wxline)}
+  .cab.wx .concept{color:var(--wx)}
+  .cab.wx h2{color:var(--wx)}
+  .cab.wx .coin{background:var(--wx)}
+  /* angler cabinet — blue machine */
+  .cab.ad{border-color:var(--adline); background:var(--adbg)}
+  .cab.ad .screen{border-color:var(--adline)}
+  .cab.ad .concept{color:var(--ad)}
+  .cab.ad h2{color:var(--ad)}
+  .cab.ad .coin{background:var(--ad); color:#06121d}
+  /* coming-soon slot */
+  .cab.soon{border-style:dashed; background:transparent; cursor:default; box-shadow:none; align-items:center; justify-content:center; text-align:center; padding:24px 14px; color:var(--dim)}
+  .cab.soon:hover{transform:none}
+  .cab.soon .big{font-size:30px; color:var(--line); margin-bottom:10px}
+  .cab.soon .lbl{font-size:11px; letter-spacing:1px; text-transform:uppercase}
+  .cab.soon .sub{font-size:10px; color:var(--dim); letter-spacing:0; text-transform:none; margin-top:6px}
+  .foot{color:var(--dim); font-size:10px; letter-spacing:0; text-transform:none; line-height:1.6; margin-top:18px; text-align:center}
+  .foot b{color:var(--goldh)}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="frame">
+      <div class="masthead">
+        <h1>Data Science Arcade</h1>
+        <div class="tag">★ Insert Coin · Learn the Concept · Beat the Machine ★</div>
+        <p class="blurb">A cabinet of self-contained browser games that teach one data-science idea each — no math, no setup, just play. Pick a machine.</p>
+      </div>
+      <div class="rule"></div>
+      <div class="marquee">▸ Now Playing ◂</div>
+      <div class="grid">
+
+        <a class="cab ad" href="the-anglers-dilemma/index.html">
+          <div class="screen">
+            <div class="concept">Precision vs. Recall</div>
+            <h2>The Angler's Dilemma</h2>
+            <p>Cast your net to catch the fish you want — without hauling in everything else. Learn why you can't max both at once.</p>
+          </div>
+          <div class="coin">▶ Insert Coin</div>
+        </a>
+
+        <a class="cab wx" href="weather-forecaster/index.html">
+          <div class="screen">
+            <div class="concept">Overfitting · Bias–Variance</div>
+            <h2>Weather Forecaster</h2>
+            <p>Three forecasters each explain last week perfectly. Pick who you trust for the days nobody has seen yet.</p>
+          </div>
+          <div class="coin">▶ Insert Coin</div>
+        </a>
+
+        <div class="cab soon">
+          <div class="big">?</div>
+          <div class="lbl">More Cabinets Coming</div>
+          <div class="sub">New games drop here</div>
+        </div>
+
+      </div>
+      <div class="foot">Built for the <b>Snapdocs</b> Customer Success team · zero-dependency HTML · open any cabinet in a browser</div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Precision &amp; Recall: The Angler's Dilemma</title>
+<style>
+  :root{
+    --ink:#0d1b2a; --deep:#0b2545; --mid:#13395e; --shal:#1b6ca8;
+    --gold:#ffcb3d; --goldh:#fff1b8; --red:#e5484d; --green:#3fb950; --cyan:#7fd1ff;
+    --other:#8aa0b6; --panel:#132033; --panel2:#1c2b42;
+    --line:#2e466b; --text:#e9eef5; --dim:#9fb2c9;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html,body{height:100%}
+  body{
+    background:#060b14;
+    color:var(--text);
+    font-family:"Courier New",ui-monospace,monospace;
+    font-weight:bold;
+    letter-spacing:.5px;
+    display:flex; align-items:flex-start; justify-content:center;
+    padding:16px;
+    image-rendering:pixelated;
+  }
+  .wrap{width:100%; max-width:980px}
+  h1,h2,h3{text-transform:uppercase; line-height:1.15}
+  .frame{
+    border:4px solid var(--gold);
+    background:var(--panel);
+    box-shadow:0 0 0 4px #060b14, 6px 6px 0 0 #000;
+    padding:14px;
+  }
+  .row{display:flex; gap:14px; align-items:flex-start}
+  .col{display:flex; flex-direction:column; gap:12px}
+  canvas{display:block; image-rendering:pixelated; background:var(--deep); border:4px solid var(--line)}
+  #tank{width:600px; height:420px}
+  .side{flex:1; min-width:270px}
+  .panel{border:4px solid var(--line); background:var(--panel2); padding:12px}
+  .panel h3{color:var(--goldh); font-size:13px; margin-bottom:8px; border-bottom:3px dotted var(--line); padding-bottom:6px}
+  .tools{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+  button{
+    font-family:inherit; font-weight:bold; text-transform:uppercase; letter-spacing:1px;
+    color:var(--ink); background:var(--gold); border:none;
+    padding:9px 10px; cursor:pointer; font-size:12px;
+    box-shadow:3px 3px 0 0 #000; transition:transform .03s;
+  }
+  button:active{transform:translate(2px,2px); box-shadow:1px 1px 0 0 #000}
+  button.sel{background:var(--goldh); outline:3px solid #fff}
+  button.ghost{background:var(--panel); color:var(--gold); outline:3px solid var(--gold)}
+  button:disabled{opacity:.4; cursor:not-allowed; box-shadow:none}
+  @keyframes lbflash{0%,100%{box-shadow:3px 3px 0 0 #000; transform:scale(1)} 50%{box-shadow:3px 3px 0 0 #000, 0 0 18px 5px rgba(255,203,61,.9); transform:scale(1.07)}}
+  @keyframes cheerpulse{0%,100%{transform:scale(1); opacity:.82} 50%{transform:scale(1.07); opacity:1}}
+  button.hot{animation:lbflash .7s infinite; background:var(--goldh); font-size:16px; padding:12px 16px; outline:3px solid #fff}
+  button.hot:disabled{animation:none}
+  #lbCheer{display:none; color:var(--goldh); font-size:15px; text-align:center; margin-bottom:10px; letter-spacing:1px; text-shadow:2px 2px 0 #000; animation:cheerpulse .7s infinite}
+  .tool b{display:block; font-size:12px}
+  .tool small{display:block; font-weight:bold; font-size:10px; color:var(--ink); opacity:.8; letter-spacing:0}
+  .slider{width:100%; margin:10px 0 2px}
+  input[type=range]{width:100%; accent-color:var(--gold); height:22px}
+  .readout{font-size:12px; color:var(--dim); display:flex; justify-content:space-between}
+  .readout b{color:var(--goldh)}
+  .big{font-size:22px; color:var(--goldh)}
+  .legend{display:flex; flex-wrap:wrap; gap:10px; font-size:10px; color:var(--dim); margin-top:8px}
+  .legend span{display:flex; align-items:center; gap:5px}
+  .sw{width:12px; height:12px; display:inline-block; border:2px solid #000}
+  .okey{display:flex; flex-wrap:wrap; gap:10px; font-size:10px; color:var(--dim); margin-top:10px; letter-spacing:0}
+  .okey span{display:flex; align-items:center; gap:5px}
+  .okey b{font-size:13px}
+  .cheat p{font-size:11px; line-height:1.55; margin:7px 0; color:var(--text); letter-spacing:0; text-transform:none}
+  .cheat .an{color:var(--dim)}
+  .cheat u{text-decoration-color:var(--gold)}
+  /* overlays */
+  .overlay{
+    position:fixed; inset:0; background:rgba(4,8,15,.86);
+    display:none; align-items:center; justify-content:center; padding:18px; z-index:10;
+  }
+  .overlay.show{display:flex}
+  .card{max-width:760px; width:100%; max-height:92vh; overflow:auto}
+  .card h2{color:var(--gold); font-size:20px; margin-bottom:4px}
+  .card .sub{color:var(--dim); font-size:12px; margin-bottom:12px; text-transform:uppercase}
+  .card p{font-weight:bold; font-size:13px; line-height:1.5; color:var(--text); margin:8px 0}
+  .card ul.brief{list-style:none; margin:10px 0; padding:0}
+  .card ul.brief li{font-weight:bold; font-size:13px; line-height:1.45; color:var(--text); padding:5px 0 5px 22px; position:relative; text-transform:none; letter-spacing:0}
+  .card ul.brief li:before{content:"▸"; color:var(--gold); position:absolute; left:3px; top:5px}
+  .card ul.brief b{color:var(--goldh)}
+  .stars{font-size:24px; color:var(--gold); letter-spacing:4px; margin:2px 0 10px; text-shadow:2px 2px 0 #000}
+  .mission .mrow{display:flex; gap:14px; align-items:center; margin-bottom:6px}
+  #introSprite{image-rendering:pixelated; background:#0b2545; border:3px solid var(--line); width:132px; height:96px; flex:0 0 auto}
+  .scoreline{display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 4px}
+  .chip{display:flex; align-items:center; gap:6px; font-size:12px; border:3px solid var(--line); background:var(--panel); padding:7px 10px; text-transform:none; letter-spacing:0}
+  .chip em{font-style:normal; font-weight:bold; font-size:14px}
+  .chip.good{border-color:#2d6a33} .chip.good em{color:var(--green)}
+  .chip.bad{border-color:#7a2b2e} .chip.bad em{color:var(--red)}
+  .chip.warn{border-color:#7a6321} .chip.warn em{color:var(--gold)}
+  .scoreline.hud{margin:10px 0 0; border-top:3px dotted var(--line); padding-top:10px; align-items:center}
+  .scoreline.hud .hudlbl{color:var(--goldh); font-size:11px; font-weight:bold; letter-spacing:1px; text-transform:uppercase; margin-right:2px}
+  .tip{border-left:5px solid var(--gold); padding:8px 11px; background:#1a1403; font-size:12px; color:var(--goldh); line-height:1.5; margin:12px 0; letter-spacing:0; text-transform:none}
+  .matrix{border-collapse:collapse; margin:10px 0; font-size:12px}
+  .matrix td,.matrix th{border:3px solid var(--line); padding:8px 12px; text-align:center}
+  .matrix th{color:var(--goldh); background:var(--panel)}
+  .cell-tp{background:#153a1f; color:var(--green)}
+  .cell-fp{background:#3a1515; color:var(--red)}
+  .cell-fn{background:#3a3115; color:var(--gold)}
+  .cell-tn{background:#1a2232; color:var(--dim)}
+  .metrics{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:10px 0}
+  .metric{border:3px solid var(--line); background:var(--panel); padding:8px; text-align:center}
+  .metric small{display:block; font-size:9px; color:var(--dim); letter-spacing:0; text-transform:none}
+  .metric b{font-size:18px; color:var(--goldh)}
+  .insight{border:4px solid var(--gold); background:#1a1403; padding:10px; font-size:13px; line-height:1.5; margin:10px 0; text-transform:none; letter-spacing:0}
+  .insight b{color:var(--goldh)}
+  .snapdocs{border:4px solid var(--cyan); background:#0e2233; padding:10px 12px; margin:10px 0; text-transform:none; letter-spacing:0}
+  .snapdocs h4{margin:0 0 6px; color:var(--cyan); font-size:12px; letter-spacing:1px; text-transform:uppercase}
+  .snapdocs ul{list-style:none; margin:0; padding:0}
+  .snapdocs li{font-size:13px; line-height:1.5; color:var(--text); padding:4px 0 4px 20px; position:relative}
+  .snapdocs li:before{content:"▸"; color:var(--cyan); position:absolute; left:3px; top:4px}
+  .snapdocs b{color:#cdeaff}
+  .scorebar{display:flex; gap:14px; font-size:12px; color:var(--dim); margin:8px 0}
+  .scorebar b{color:var(--goldh); font-size:16px}
+  .scoremath{border:3px solid var(--line); background:var(--panel); margin:8px 0 2px}
+  .scoremath table{width:100%; border-collapse:collapse}
+  .scoremath caption{text-align:left; padding:7px 10px 2px; color:var(--goldh); font-size:11px; text-transform:uppercase; letter-spacing:.5px}
+  .scoremath td{padding:4px 10px; font-size:13px; text-transform:none; letter-spacing:0}
+  .scoremath .lbl{color:var(--dim)}
+  .scoremath .calc{text-align:right; color:var(--text)}
+  .scoremath .sub{text-align:right; font-weight:bold; width:60px}
+  .scoremath .pos{color:var(--green)} .scoremath .neg{color:var(--red)}
+  .scoremath .zero td{color:#67788f}
+  .scoremath .total td{border-top:3px solid var(--line); padding-top:6px; padding-bottom:7px}
+  .scoremath .total .lbl{color:var(--text); text-transform:uppercase; letter-spacing:.5px}
+  .scoremath .total .sub{color:var(--goldh); font-size:15px}
+  .center{text-align:center}
+  .actions{display:flex; gap:10px; justify-content:center; margin-top:14px; flex-wrap:wrap}
+  a.note{color:var(--gold)}
+  .hint{font-size:10px; color:var(--dim); margin-top:6px; letter-spacing:0; text-transform:none}
+  @media(max-width:860px){
+    .row{flex-direction:column}
+    #tank{width:100%; height:auto}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="frame col">
+    <div style="display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px">
+      <h1 style="color:var(--gold); font-size:18px">Precision &amp; Recall<span style="color:var(--text)"> — The Angler's Dilemma</span></h1>
+      <div class="readout" style="gap:16px">
+        <span id="roundTag">Practice round</span>
+        <span>Catch: <b id="targetName">—</b></span>
+        <span>Score <b id="score">0</b></span>
+      </div>
+    </div>
+
+    <div class="row">
+      <canvas id="tank" width="600" height="420"></canvas>
+
+      <div class="side col">
+        <div class="panel">
+          <h3>1 · Pick your gear <small style="color:var(--dim);font-weight:bold">(your rig's SHAPE)</small></h3>
+          <div class="tools" id="tools"></div>
+        </div>
+
+        <div class="panel">
+          <h3>2 · Set the depth <small style="color:var(--dim);font-weight:bold">(how DEEP you fish)</small></h3>
+          <input class="slider" id="depth" type="range" min="0" max="60" step="1" value="20">
+          <div class="readout"><span>Shallow 0 ft</span><span>Deep 60 ft</span></div>
+          <div class="readout" style="margin-top:6px">
+            <span>Depth band: <b id="bandLabel">10–30 ft</b></span>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>3 · Position the boat <small style="color:var(--dim);font-weight:bold">(how far ACROSS)</small></h3>
+          <input class="slider" id="boatX" type="range" min="0" max="100" step="1" value="50">
+          <div class="readout"><span>◀ Left</span><span>Right ▶</span></div>
+          <div class="readout" style="margin-top:6px">
+            <span>Across band: <b id="boatLabel">39–61</b></span>
+          </div>
+          <div class="hint">Tip: click inside the tank to move the boat AND the depth at once.</div>
+        </div>
+
+        <div class="panel">
+          <h3>4 · Cast</h3>
+          <button id="cast" style="width:100%; font-size:15px; padding:12px">▶ Cast the line</button>
+          <div class="legend">
+            <span><i class="sw" id="swT" style="background:var(--gold)"></i><span id="legTxtT">Target fish</span></span>
+            <span><i class="sw" style="background:var(--other)"></i><span id="legTxtO">Other fish</span></span>
+            <span><i class="sw" style="background:rgba(255,203,61,.28); border-color:var(--gold)"></i>Catch box</span>
+          </div>
+          <div class="okey">
+            <span><b style="color:var(--green)">✓</b> right fish, kept</span>
+            <span><b style="color:var(--red)">✗</b> wrong fish, kept</span>
+            <span><b style="color:var(--gold)">💨</b> right fish got away</span>
+          </div>
+        </div>
+
+        <div class="panel cheat">
+          <h3>📖 Cheat sheet</h3>
+          <p><b style="color:var(--green)">Precision</b> — of the fish you <u>keep</u>, how many are the one you wanted? <span class="an">(a clean bucket)</span></p>
+          <p><b style="color:var(--cyan)">Recall</b> — of all the right fish <u>out there</u>, how many did you land? <span class="an">(a full bucket)</span></p>
+          <p class="an">Narrow &amp; aimed = cleaner bucket, but you miss some. Cast wide = you get them all, plus junk. You usually can't have both.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="scoreline hud" id="hudScore">
+      <span class="hudlbl">This round's points:</span>
+      <span class="chip good">✅ Keep a <b id="hudT">fish</b> <em>+<span id="hudTP">10</span></em></span>
+      <span class="chip bad">❌ Keep a <b id="hudO">junk</b> <em>−<span id="hudFP">5</span></em></span>
+      <span class="chip warn">💨 Let a <b id="hudT2">fish</b> escape <em>−<span id="hudFN">5</span></em></span>
+    </div>
+  </div>
+</div>
+
+<!-- TITLE -->
+<div class="overlay show" id="titleOv">
+  <div class="card frame center">
+    <h2>🎣 The Angler's Dilemma</h2>
+    <div class="sub">A tiny game about Precision vs. Recall</div>
+    <p>You're an angler. Each round, one kind of fish is the one you want. Rig your gear, then cast.</p>
+    <p style="color:var(--dim)">
+      <b style="color:var(--green)">+ points</b> for every right fish you keep &nbsp;·&nbsp;
+      <b style="color:var(--red)">− points</b> for wrong fish you keep &nbsp;·&nbsp;
+      <b style="color:var(--gold)">− points</b> for right fish that get away
+    </p>
+    <p>Your <b>gear</b> sets the <b>shape</b> of your catch box. The <b>depth dial</b> and the <b>boat</b> slide that box up/down and left/right over the water. Small + aimed = clean but misses a lot. Big = catches everything, junk included. There's no perfect rig — the best one depends on what each mistake <i>costs</i>.</p>
+    <div class="actions">
+      <button id="start" style="font-size:15px; padding:12px 22px">Start fishing ▶</button>
+    </div>
+  </div>
+</div>
+
+<!-- ROUND INTRO -->
+<div class="overlay" id="introOv">
+  <div class="card frame mission">
+    <div class="mrow">
+      <canvas id="introSprite" width="132" height="96"></canvas>
+      <div>
+        <h2 id="introName">Round</h2>
+        <div class="sub" id="introSub"></div>
+      </div>
+    </div>
+    <ul id="introBrief" class="brief"></ul>
+    <div class="scoreline">
+      <span class="chip good">✅ Keep a <b id="scT">fish</b> <em>+<span id="scTP">10</span></em></span>
+      <span class="chip bad">❌ Keep a <b id="scO">junk</b> <em>−<span id="scFP">5</span></em></span>
+      <span class="chip warn">💨 Let a <b id="scT2">fish</b> escape <em>−<span id="scFN">5</span></em></span>
+    </div>
+    <p class="tip" id="introRegime"></p>
+    <div class="actions"><button id="introGo">Rig up ▶</button></div>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div class="overlay" id="resOv">
+  <div class="card frame">
+    <h2 id="resName">Results</h2>
+    <div class="stars" id="stars">☆☆☆</div>
+    <div class="sub" id="resSub"></div>
+
+    <div class="scorebar">
+      <span>This cast: <b id="roundScore">0</b></span>
+      <span>Total: <b id="totalScore">0</b></span>
+      <span id="practiceNote" style="display:none; color:var(--cyan)">practice — not counted</span>
+    </div>
+
+    <div class="scoremath" id="scoreMath"></div>
+
+    <div class="row" style="gap:16px; align-items:flex-start">
+      <div style="flex:0 0 auto">
+        <table class="matrix">
+          <tr><th></th><th>Kept</th><th>Left in water</th></tr>
+          <tr><th id="mrowT">Target</th><td class="cell-tp" id="mTP">0<br><small>caught ✓</small></td><td class="cell-fn" id="mFN">0<br><small>got away 💨</small></td></tr>
+          <tr><th id="mrowO">Other</th><td class="cell-fp" id="mFP">0<br><small>wrong ✗</small></td><td class="cell-tn" id="mTN">0<br><small>avoided ✓</small></td></tr>
+        </table>
+      </div>
+      <div style="flex:1; min-width:240px">
+        <canvas id="chart" width="360" height="252" style="width:100%; height:auto"></canvas>
+        <div class="legend" style="justify-content:center">
+          <span><b style="color:var(--green)">✓</b> kept, right</span>
+          <span><b style="color:var(--red)">✗</b> kept, wrong</span>
+          <span><b style="color:var(--gold)">💨</b> got away</span>
+          <span><i class="sw" style="background:rgba(255,203,61,.28);border-color:var(--gold)"></i>your catch box</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="metrics">
+      <div class="metric"><small>PRECISION</small><b id="mPrec">—</b><small>of fish you KEPT, % right</small></div>
+      <div class="metric"><small>RECALL</small><b id="mRec">—</b><small>of ALL right fish, % you got</small></div>
+      <div class="metric"><small>ACCURACY</small><b id="mAcc">—</b><small>% of all calls that were right</small></div>
+      <div class="metric"><small>BALANCE (F1)</small><b id="mF1">—</b><small>precision + recall together</small></div>
+    </div>
+
+    <div class="insight" id="insight"></div>
+
+    <div class="snapdocs" id="snapdocs" style="display:none"></div>
+
+    <div class="actions">
+      <button class="ghost" id="retry">↺ Re-cast this round</button>
+      <button id="next">Next round ▶</button>
+    </div>
+  </div>
+</div>
+
+<!-- SUMMARY -->
+<div class="overlay" id="sumOv">
+  <div class="card frame">
+    <h2>🏆 Season complete</h2>
+    <div class="sub">Your operating points across all rounds</div>
+    <div class="scorebar"><span>Final score: <b id="finalScore">0</b></span></div>
+    <div class="row" style="align-items:flex-start; gap:16px">
+      <div style="flex:1; min-width:240px">
+        <canvas id="scatter" width="320" height="320" style="width:100%; height:auto; max-width:320px"></canvas>
+      </div>
+      <div style="flex:1; min-width:240px">
+        <p>Every cast is a dot: <b>precision</b> across, <b>recall</b> up. Notice how the <i>same</i> angler had to sit in different corners of this plot depending on what each round's mistakes cost.</p>
+        <p style="color:var(--dim)">• Fines for wrong fish → you drift <b>right</b> (high precision, narrow band).<br>• Disaster for misses → you drift <b>up</b> (high recall, wide band).<br>• Rare fish → accuracy lied; precision &amp; recall told the truth.</p>
+        <p><b style="color:var(--goldh)">That's the whole lesson:</b> a tool (or a model) isn't "good" or "bad" on its own. Every modeled decision has a tradeoff, and models are best used with explicit knowledge of that tradeoff.</p>
+      </div>
+    </div>
+    <div class="panel" id="lbPanel" style="margin-top:14px; display:none">
+      <h3>🏆 High Scores</h3>
+      <div id="lbCheer"></div>
+      <div id="lbEntry" class="row" style="gap:8px; align-items:center; margin-bottom:10px">
+        <input id="lbName" type="text" maxlength="12" placeholder="YOUR INITIALS" autocomplete="off"
+          style="flex:1; min-width:120px; font-family:inherit; font-weight:bold; font-size:13px; text-transform:uppercase; letter-spacing:1px; padding:9px 10px; background:var(--panel); color:var(--text); border:3px solid var(--line); outline:none">
+        <button id="lbSubmit">Submit score</button>
+      </div>
+      <div id="lbStatus" class="readout" style="margin-bottom:8px; display:none"></div>
+      <div id="lbList"></div>
+    </div>
+    <div class="actions"><button id="again">Play again ▶</button></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+//////////////////// CONFIG ////////////////////
+const MAXD = 60;              // max depth in feet
+const TANK = {w:600, h:420, pad:36}; // canvas logical size + left ruler pad
+const FPX = 2;                // pixel size for fish sprites (smaller = finer, SNES-era look)
+
+// Leaderboard (Supabase). Paste your Project URL + anon public key below.
+// Leave as-is to run the game with the leaderboard hidden (offline mode).
+const SUPABASE_URL      = "https://lvcavhfmbzrjqsmvjebe.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2Y2F2aGZtYnpyanFzbXZqZWJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE4NDEwOTAsImV4cCI6MjEwNzQxNzA5MH0.GfI7_wUqjMWX9un5mKpeRHPcdYplzLZ1mrgwUq5FKgc";
+const LB_ON = !SUPABASE_URL.includes("YOUR-PROJECT") && !SUPABASE_ANON_KEY.includes("YOUR-ANON");
+
+// W = horizontal extent (boat axis), H = depth extent. Each rig = a distinct box SHAPE.
+const TOOLS = [
+  {id:"spear", name:"Spear",     W:9,  H:13, blurb:"Tall & narrow — surgical"},
+  {id:"rod",   name:"Rod & Hook",W:21, H:18, blurb:"Square & balanced — medium reach"},
+  {id:"net",   name:"Net",       W:44, H:36, blurb:"Big & grabby, near-square"},
+  {id:"trawl", name:"Trawl",     W:90, H:30, blurb:"Wide sweeping drag-net"},
+];
+
+const ROUNDS = [
+  { name:"Rainbow Trout", junkName:"Junk Fish", sprite:"trout", color:"#8fae63", par:85, sub:"Clear Mountain Water",
+    target:{mean:14,sd:3}, other:{mean:45,sd:5}, targetX:{mean:50,sd:17}, otherX:{mean:50,sd:28}, nT:12, nO:12,
+    wTP:10, wFP:5, wFN:5, regime:"balanced",
+    brief:[
+      "Trout cruise shallow; junk fish sit deep — they barely overlap.",
+      "The easy case: find a depth band that scoops trout and skips the rest.",
+      "Sideways they're all mixed, so <b>depth</b> is your real handle."
+    ]
+  },
+  { name:"Bluegill", junkName:"Junk Fish", sprite:"bluegill", color:"#6aa6c8", par:73, sub:"Murky Overlap",
+    target:{mean:24,sd:7}, other:{mean:35,sd:7}, targetX:{mean:46,sd:16}, otherX:{mean:54,sd:26}, nT:16, nO:20,
+    wTP:10, wFP:5, wFN:5, regime:"balanced",
+    brief:[
+      "Bluegill and junk fish mingle at similar depths.",
+      "Widen your band → you grab junk. Narrow it → you miss bluegill.",
+      "You can't have it all. Welcome to the <b>tradeoff</b>."
+    ]
+  },
+  { name:"Trophy Bass", junkName:"Protected Fish", sprite:"bass", color:"#6f8f4a", par:26, sub:"Catch-and-Release Fines",
+    target:{mean:20,sd:6}, other:{mean:26,sd:14}, targetX:{mean:50,sd:3}, otherX:{mean:50,sd:22}, nT:16, nO:24,
+    wTP:8, wFP:25, wFN:2, regime:"precision",
+    brief:[
+      "Keeping a protected fish is a brutal fine (−25). Missing a bass barely stings (−2).",
+      "Bass stack in a tight, narrow column; protected fish drift loosely all around them.",
+      "Go surgical — A wide cast just rakes in fines.",
+      "When wrong catches are this costly, chase a <b>CLEAN bucket (precision)</b>."
+    ]
+  },
+  { name:"Invasive Lionfish", junkName:"Native Fish", sprite:"lionfish", color:"#d6734a", par:23, sub:"Eradication Order",
+    target:{mean:26,sd:9}, other:{mean:32,sd:8}, targetX:{mean:50,sd:25}, otherX:{mean:50,sd:14}, nT:18, nO:20,
+    wTP:8, wFP:2, wFN:12, regime:"recall",
+    brief:[
+      "Every lionfish left behind breeds disaster (−12). Scooping a native fish is cheap (−2).",
+      "Lionfish are scattered everywhere — the only way to get them all is to cast wide.",
+      "When misses are this expensive, chase a <b>FULL bucket (recall)</b> and tolerate the junk."
+    ]
+  },
+  { name:"Rare Sturgeon", junkName:"Common Fish", sprite:"sturgeon", color:"#93a07c", par:12, sub:"Needle in a Haystack",
+    target:{mean:20,sd:5}, other:{mean:34,sd:14}, targetX:{mean:46,sd:13}, otherX:{mean:54,sd:26}, nT:4, nO:55,
+    wTP:25, wFP:6, wFN:12, regime:"imbalance",
+    brief:[
+      "Just a handful of sturgeon hidden in a swarm of common fish.",
+      "Careful: <b>accuracy</b> looks great even if you catch nothing — almost no fish is a sturgeon.",
+      "Trust <b>precision &amp; recall</b> instead."
+    ]
+  },
+];
+
+// Real-world bridge shown after each scored round (keyed by round name; practice round has none).
+// DRAFT COPY — mapping each cost regime to a Snapdocs document-modeling use case. Refine freely.
+const SNAPDOCS = {
+  "Bluegill": { title:"Routine document classification",
+    bullets:[
+      "Sorting everyday closing docs into the right bucket — both misfiled documents and non-filed documents cost about the same (a human untangles it either way).",
+      "No single mistake is a catastrophe, so there's no reason to skew one way.",
+      "This is the <b>balanced / F1</b> world: tune for the best precision–recall blend, not one extreme."
+    ]},
+  "Trophy Bass": { title:"Data Extraction with no human in the loop",
+    bullets:[
+      "When the model extracts the wrong value from the document and the error makes it into the loan file, a <b>wrong</b> value propagates downstream and is costly to unwind.",
+      "Failing to extract a field is cheap — a human just keys it in. So only auto-accept when confidence is high; route the rest to review.",
+      "High stakes on wrong answers → optimize for <b>precision</b> (a clean bucket), even if recall drops."
+    ]},
+  "Invasive Lionfish": { title:"Catching a missing signature or notary stamp before a loan funds",
+    bullets:[
+      "A document that slips through unsigned is a <b>defective loan</b> — buyback risk and legal exposure. A disaster.",
+      "Over-flagging a few clean docs for a quick human glance is cheap by comparison.",
+      "When misses are the expensive mistake → optimize for <b>recall</b> (a full bucket) and tolerate extra review."
+    ]},
+  "Rare Sturgeon": { title:"Finding the Error in a Closing",
+    bullets:[
+      "When reviewing closings for errors, the vast majority of documents are correctly executed — the targeted error is a needle in a haystack.",
+      "A model that says \"nothing here\" scores ~99% <b>accuracy</b> and is useless. Accuracy lies when the target is rare.",
+      "Judge performance on <b>precision &amp; recall</b> (did we actually find the needles?), never on accuracy alone."
+    ]}
+};
+
+//////////////////// SPRITES ////////////////////
+// head faces right. B=body, T=tail, D=dorsal, A=anal, s=stripe, M=mouth,
+// F=spine/fin (lionfish), E=eye white, P=pupil, .=transparent
+const SPR = {
+  trout:["...............",".T....DDDD.....","TTT..BBBBBBB...",".TTBBBBBBBBBBB.","TTTBBBsssssBBBE",".TTBBBBBBBBBBBP","TTTBBBBBBBBBBBE",".TT..BBBBBBB...",".T....AAAA....."],
+  bluegill:["....DDDD....","...BBBBBB...","..BBBBBBBB..",".TBBBBBBBBB.","TTBBBBBBBBBE","TTBBBsBBBBPE","TTBBBBBBBBBE",".TBBBBBBBBB.","..BBBBBBBB..","...BBBBBB...","....AAAA...."],
+  bass:["................",".T....DDDDD.....","TTT.BBBBBBBBB...",".TTBBBBBBBBBBBB.","TTTBssssssssBBME",".TTBBBBBBBBBBBMP","TTTBBBBBBBBBBBME",".TTBbbbbbbbbbBB.","TTT.bbbbbbbbb...",".T....AAAAA....."],
+  lionfish:["F.F.F.F.F.F...",".FFFFFFFFFF...","F.BBBBBBBB.F..",".sBsBsBsBsBB..","FBsBsBsBsBsBBE",".sBsBsBsBsBBBP","FBsBsBsBsBsBBE",".sBsBsBsBsBB..","F.BBBBBBBB.F..",".FFFFFFFFFF...","F.F.F.F.F.F..."],
+  sturgeon:["...................","TT...DDD...........",".TBBBBBBBBBBBBB....","TTBBBBBBBBBBBBBBBBE",".TBBBBBBBBBBBBBBBBP","TTBBBBBBBBBBBBBBBBE",".TBBBBBBBBBBBBB....","TT...AAA...........","..................."],
+  junkA:["..........",".T...BBB..","TTBBBBBBBE",".TBBBBBBPE","TTBBBBBBBE",".T...BBB..",".........."],
+  junkB:["........","..BBBB..",".TBBBBBE","TTBBBBPE",".TBBBBBE","..BBBB..","........"],
+  boat:[".....F.....",".....M.....","...SSMM....","..SSSSMM...",".SSSSSMM...","HHHHHHHHHHH",".hhhhhhhhh."],
+};
+const PAL = {
+  trout:{B:"#8fae63",T:"#5f7a3f",D:"#5f7a3f",A:"#5f7a3f",s:"#e5748a",E:"#ffffff",P:"#0d1b2a"},
+  bluegill:{B:"#6aa6c8",T:"#3f6f8f",D:"#3f6f8f",A:"#e59a3d",s:"#24405c",E:"#ffffff",P:"#0d1b2a"},
+  bass:{B:"#6f8f4a",T:"#4e6a30",D:"#4e6a30",A:"#4e6a30",s:"#31431d",b:"#c2d99a",M:"#243a16",E:"#ffffff",P:"#0d1b2a"},
+  lionfish:{B:"#d6734a",s:"#fff1e0",F:"#c0392b",E:"#ffffff",P:"#0d1b2a"},
+  sturgeon:{B:"#93a07c",T:"#6b7857",D:"#6b7857",A:"#6b7857",E:"#ffffff",P:"#0d1b2a"},
+  junk:{B:"#8aa0b6",T:"#5f7488",D:"#5f7488",A:"#5f7488",E:"#dfe8f0",P:"#0d1b2a"},
+  boat:{H:"#6b4a2b",h:"#8a6136",M:"#5a3b1e",S:"#e9eef5",F:"#e5484d"},
+};
+const ICON = {
+  check:["....#","...#.","#.#..",".##..","..#.."],
+  cross:["#...#",".#.#.","..#..",".#.#.","#...#"],
+  away: ["..#..","...#.","#####","...#.","..#.."],
+};
+
+function drawSprite(g, grid, colors, x, y, px, flip){
+  for(let r=0;r<grid.length;r++){
+    const row = grid[r];
+    for(let c=0;c<row.length;c++){
+      const ch = row[c];
+      if(ch===" "||ch===".") continue;
+      const col = colors[ch];
+      if(!col) continue;
+      const cc = flip ? (row.length-1-c) : c;
+      g.fillStyle = col;
+      g.fillRect(Math.round(x+cc*px), Math.round(y+r*px), px, px);
+    }
+  }
+}
+function drawBig(id, grid, pal){
+  const c=$(id), x=c.getContext("2d"); x.imageSmoothingEnabled=false;
+  x.clearRect(0,0,c.width,c.height);
+  const gw=grid[0].length, gh=grid.length;
+  const px=Math.max(2,Math.floor(Math.min((c.width-10)/gw,(c.height-10)/gh)));
+  const ox=Math.floor((c.width-gw*px)/2), oy=Math.floor((c.height-gh*px)/2);
+  drawSprite(x,grid,pal,ox,oy,px,false);
+}
+
+//////////////////// UTIL ////////////////////
+function gauss(mean,sd){ // Box-Muller
+  let u=0,v=0; while(u===0)u=Math.random(); while(v===0)v=Math.random();
+  return mean + sd*Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+}
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const pct=x=> (x===null||isNaN(x)) ? "—" : Math.round(x*100)+"%";
+const depthToY=d=> TANK.pad + (d/MAXD)*(TANK.h-2*TANK.pad);
+const yToDepth=y=> clamp(((y-TANK.pad)/(TANK.h-2*TANK.pad))*MAXD,0,MAXD);
+// horizontal (boat) axis: abstract [0,MAXX] ↔ pixel band [PX0,PX1]
+const MAXX=100, PX0=TANK.pad+20, PX1=TANK.w-40;
+const xToPx=x=> PX0 + (clamp(x,0,MAXX)/MAXX)*(PX1-PX0);
+const pxToX=px=> clamp(((px-PX0)/(PX1-PX0))*MAXX,0,MAXX);
+function stars(score,par){ let n = score>=par?3 : score>=par*0.6?2 : (score>0&&score>=par*0.25)?1:0; return "★".repeat(n)+"☆".repeat(3-n); }
+
+//////////////////// STATE ////////////////////
+let roundIdx=0, tool=TOOLS[1], centerDepth=20, boatX=50, fish=[], cast=false, total=0, history=[];
+let lastResult=null;
+
+const $=id=>document.getElementById(id);
+const tank=$("tank"), g=tank.getContext("2d");
+g.imageSmoothingEnabled=false;
+
+//////////////////// SETUP SCREEN ////////////////////
+function buildTools(){
+  const box=$("tools"); box.innerHTML="";
+  TOOLS.forEach(t=>{
+    const b=document.createElement("button");
+    b.className="tool"+(t.id===tool.id?" sel":"");
+    b.innerHTML=`<b>${t.name}</b><small>${t.W}×${t.H} · ${t.blurb}</small>`;
+    b.onclick=()=>{ if(cast) return; tool=t; buildTools(); updateBandLabel(); };
+    box.appendChild(b);
+  });
+}
+function updateBandLabel(){
+  const lo=clamp(centerDepth-tool.H/2,0,MAXD), hi=clamp(centerDepth+tool.H/2,0,MAXD);
+  $("bandLabel").textContent=`${Math.round(lo)}–${Math.round(hi)} ft`;
+  const xlo=clamp(boatX-tool.W/2,0,MAXX), xhi=clamp(boatX+tool.W/2,0,MAXX);
+  const bl=$("boatLabel"); if(bl) bl.textContent=`${Math.round(xlo)}–${Math.round(xhi)}`;
+}
+
+//////////////////// ROUND LIFECYCLE ////////////////////
+function genFish(){
+  const R=ROUNDS[roundIdx]; fish=[];
+  const tgtGrid=SPR[R.sprite], tgtPal=PAL[R.sprite];
+  let jn=0;
+  const place=(n,dist,distX,isT)=>{
+    for(let i=0;i<n;i++){
+      const d=clamp(gauss(dist.mean,dist.sd),0,MAXD);
+      const xa=clamp(gauss(distX.mean,distX.sd),0,MAXX);
+      const grid = isT ? tgtGrid : (jn++%2 ? SPR.junkB : SPR.junkA);
+      const pal  = isT ? tgtPal : PAL.junk;
+      const w=grid[0].length*FPX, h=grid.length*FPX;
+      fish.push({target:isT, depth:d, xabs:xa, grid, pal, w, h,
+        flip: Math.random()<.5, caught:false, jig:Math.random()*Math.PI*2});
+    }
+  };
+  place(R.nT,R.target,R.targetX,true);
+  place(R.nO,R.other,R.otherX,false);
+}
+// round 0 is an unscored practice round; rounds 1..4 are the four that count
+function roundLabel(){ return roundIdx===0 ? "Practice round" : "Round "+roundIdx+" of 4"; }
+function startRound(){
+  const R=ROUNDS[roundIdx];
+  cast=false; centerDepth=20; boatX=50; tool=TOOLS[1];
+  $("roundTag").textContent=roundLabel();
+  $("targetName").textContent=R.name;
+  $("score").textContent=total;
+  $("depth").value=20; $("depth").disabled=false;
+  $("boatX").value=50; $("boatX").disabled=false; $("cast").disabled=false;
+  genFish(); buildTools(); updateBandLabel();
+  // sidebar legend uses this round's names + target color
+  $("legTxtT").textContent=R.name;
+  $("legTxtO").textContent=R.junkName;
+  $("swT").style.background=R.color;
+  // mission card
+  $("introName").textContent=roundLabel()+" — "+R.name;
+  $("introSub").textContent=R.sub;
+  $("introBrief").innerHTML=R.brief.map(b=>`<li>${b}</li>`).join("");
+  $("scT").textContent=R.name; $("scT2").textContent=R.name; $("scO").textContent=R.junkName;
+  $("scTP").textContent=R.wTP; $("scFP").textContent=R.wFP; $("scFN").textContent=R.wFN;
+  $("hudT").textContent=R.name; $("hudT2").textContent=R.name; $("hudO").textContent=R.junkName;
+  $("hudTP").textContent=R.wTP; $("hudFP").textContent=R.wFP; $("hudFN").textContent=R.wFN;
+  drawBig("introSprite", SPR[R.sprite], PAL[R.sprite]);
+  const regimeMsg={
+    balanced:"⚖️ Both mistakes cost the same here — aim for a clean AND full bucket.",
+    precision:"💰 Keeping a wrong fish costs way more than missing one → go for a CLEAN bucket (precision).",
+    recall:"🚨 Missing a fish costs way more than grabbing junk → go for a FULL bucket (recall).",
+    imbalance:"🎭 The right fish is super rare → accuracy will fool you. Watch precision & recall."
+  }[R.regime];
+  $("introRegime").textContent=regimeMsg;
+  show("introOv");
+}
+
+//////////////////// RENDER TANK ////////////////////
+let t0=performance.now();
+function draw(){
+  const now=performance.now(), dt=(now-t0)/1000;
+  g.clearRect(0,0,TANK.w,TANK.h);
+  // water bands (3 shades) for a retro look
+  const bands=[["#0b2545",0],["#13395e",.45],["#1b6ca8",.8]];
+  for(let i=0;i<bands.length;i++){
+    g.fillStyle=bands[i][0];
+    const y0=TANK.pad+bands[i][1]*(TANK.h-2*TANK.pad);
+    const y1=i<bands.length-1 ? TANK.pad+bands[i+1][1]*(TANK.h-2*TANK.pad) : TANK.h-TANK.pad;
+    g.fillRect(TANK.pad,y0,TANK.w-TANK.pad, y1-y0);
+  }
+  // surface waves (pixel blocks)
+  g.fillStyle="#7fd1ff";
+  for(let x=TANK.pad;x<TANK.w;x+=8){
+    const yy=TANK.pad-6 + (Math.sin((x+now/160)/14)>0?0:4);
+    g.fillRect(x,yy,6,4);
+  }
+  // seabed
+  g.fillStyle="#2a1e10";
+  g.fillRect(TANK.pad,TANK.h-TANK.pad,TANK.w-TANK.pad,TANK.pad);
+  g.fillStyle="#3c2c17";
+  for(let x=TANK.pad;x<TANK.w;x+=10) g.fillRect(x,TANK.h-TANK.pad,6,4);
+
+  // depth ruler
+  g.fillStyle="#9fb2c9"; g.font="10px 'Courier New'"; g.textBaseline="middle";
+  for(let d=0; d<=MAXD; d+=10){
+    const y=depthToY(d);
+    g.fillRect(TANK.pad-4,y,6,2);
+    g.fillText(d+"",2,y);
+  }
+
+  // catch box geometry (2-D: depth × horizontal) — box itself is drawn ON TOP of fish below
+  const lo=clamp(centerDepth-tool.H/2,0,MAXD), hi=clamp(centerDepth+tool.H/2,0,MAXD);
+  const xlo=clamp(boatX-tool.W/2,0,MAXX), xhi=clamp(boatX+tool.W/2,0,MAXX);
+  const yLo=depthToY(lo), yHi=depthToY(hi);
+  const pxLo=xToPx(xlo), pxHi=xToPx(xhi);
+
+  // boat at the surface — one sprite that slides horizontally, with a line down to the box
+  const bcx=xToPx(boatX);
+  const BPX=3, bw=SPR.boat[0].length*BPX, bh=SPR.boat.length*BPX;
+  const btop=TANK.pad-bh-2, bbot=btop+bh, bx=Math.round(bcx-bw/2);
+  g.fillStyle="#c0392b"; for(let y=bbot-2;y<yLo;y+=8) g.fillRect(bcx-1,y,2,5); // fishing line
+  drawSprite(g, SPR.boat, PAL.boat, bx, btop, BPX, false);
+
+  // fish (centered on their x, depth)
+  for(const f of fish){
+    const fx=xToPx(f.xabs)-f.w/2;
+    const y=depthToY(f.depth) + Math.sin(dt*2+f.jig)*2 - f.h/2;
+    let mark=null, faded=false;
+    if(cast){
+      if(f.target && f.caught) mark="tp";
+      else if(!f.target && f.caught) mark="fp";
+      else if(f.target && !f.caught) mark="fn";
+      else { mark="tn"; faded=true; }
+    }
+    g.globalAlpha = faded?0.3:1;
+    drawSprite(g,f.grid,f.pal,fx,y,FPX,f.flip);
+    g.globalAlpha=1;
+    if(cast && mark && mark!=="tn"){
+      const mx=fx+f.w+2, my=y+f.h/2-7;
+      if(mark==="tp")      drawSprite(g,ICON.check,{"#":"#3fb950"},mx,my,3,false);
+      else if(mark==="fp") drawSprite(g,ICON.cross,{"#":"#e5484d"},mx,my,3,false);
+      else if(mark==="fn") drawSprite(g,ICON.away ,{"#":"#ffcb3d"},mx,my,3,false);
+    }
+  }
+
+  // catch box drawn ON TOP of the fish so the selection is always visible
+  const bxw=pxHi-pxLo, bxh=yHi-yLo, BT=3;
+  g.fillStyle="rgba(255,203,61,.22)";
+  g.fillRect(pxLo,yLo,bxw,bxh);
+  // bold solid frame (dark backing + bright gold) so it reads clearly above the fish
+  g.fillStyle="#1a1403";
+  g.fillRect(pxLo-BT-1,yLo-BT-1,bxw+2*(BT+1),BT+1); g.fillRect(pxLo-BT-1,yHi+1,bxw+2*(BT+1),BT+1);
+  g.fillRect(pxLo-BT-1,yLo-BT-1,BT+1,bxh+2*(BT+1)); g.fillRect(pxHi+1,yLo-BT-1,BT+1,bxh+2*(BT+1));
+  g.fillStyle="#ffd84d";
+  g.fillRect(pxLo-1,yLo-1,bxw+2,BT); g.fillRect(pxLo-1,yHi-BT+1,bxw+2,BT);
+  g.fillRect(pxLo-1,yLo-1,BT,bxh+2);  g.fillRect(pxHi-BT+1,yLo-1,BT,bxh+2);
+
+  // catch-box tag
+  g.fillStyle="#ffcb3d"; g.font="11px 'Courier New'"; g.textBaseline="bottom";
+  g.fillText(tool.name+" · "+Math.round(lo)+"–"+Math.round(hi)+" ft", pxLo+2, yLo-2);
+
+  requestAnimationFrame(draw);
+}
+
+//////////////////// CAST + SCORE ////////////////////
+function doCast(){
+  if(cast) return;
+  const dlo=centerDepth-tool.H/2, dhi=centerDepth+tool.H/2;
+  const xlo=boatX-tool.W/2, xhi=boatX+tool.W/2;
+  let TP=0,FP=0,FN=0,TN=0;
+  for(const f of fish){
+    const inBand = f.depth>=dlo && f.depth<=dhi && f.xabs>=xlo && f.xabs<=xhi;
+    f.caught=inBand;
+    if(f.target && inBand) TP++;
+    else if(!f.target && inBand) FP++;
+    else if(f.target && !inBand) FN++;
+    else TN++;
+  }
+  const R=ROUNDS[roundIdx];
+  const roundScore = R.wTP*TP - R.wFP*FP - R.wFN*FN;
+  if(roundIdx>0) total += roundScore;   // practice round (idx 0) does not count toward the season total
+  const n=TP+FP+FN+TN;
+  const precision = (TP+FP)? TP/(TP+FP) : null;
+  const recall    = (TP+FN)? TP/(TP+FN) : null;
+  const accuracy  = n? (TP+TN)/n : null;
+  const f1 = (precision!==null&&recall!==null&&(precision+recall)>0)? 2*precision*recall/(precision+recall):null;
+
+  lastResult={TP,FP,FN,TN,precision,recall,accuracy,f1,roundScore};
+  cast=true; $("cast").disabled=true; $("depth").disabled=true; $("boatX").disabled=true;
+  history[roundIdx]={round:R.name, precision, recall, idx:roundIdx};
+
+  showResults();
+}
+
+function showResults(){
+  const R=ROUNDS[roundIdx], L=lastResult;
+  $("resName").textContent=roundLabel()+" — "+R.name;
+  $("stars").textContent=stars(L.roundScore,R.par);
+  $("resSub").textContent=R.sub;
+  $("roundScore").textContent=(L.roundScore>=0?"+":"")+L.roundScore;
+  $("totalScore").textContent=total;
+  $("score").textContent=total;
+  $("practiceNote").style.display = roundIdx===0 ? "inline" : "none";
+  // explicit per-fish score arithmetic (weights come from the round, so −25 Bass etc. render automatically)
+  const sgn=n=>(n>=0?"+":"−")+Math.abs(n);
+  $("scoreMath").innerHTML =
+    '<table><caption>How this cast scored</caption>'
+    +`<tr><td class="lbl">✓ kept right</td><td class="calc">${L.TP} × +${R.wTP}</td><td class="sub pos">${sgn(R.wTP*L.TP)}</td></tr>`
+    +`<tr><td class="lbl">✗ kept wrong</td><td class="calc">${L.FP} × −${R.wFP}</td><td class="sub neg">${sgn(-R.wFP*L.FP)}</td></tr>`
+    +`<tr><td class="lbl">💨 got away</td><td class="calc">${L.FN} × −${R.wFN}</td><td class="sub neg">${sgn(-R.wFN*L.FN)}</td></tr>`
+    +`<tr class="zero"><td class="lbl">✓ rightly left</td><td class="calc">${L.TN} × 0</td><td class="sub">0</td></tr>`
+    +`<tr class="total"><td class="lbl">This cast</td><td class="calc"></td><td class="sub">${sgn(L.roundScore)}</td></tr>`
+    +'</table>';
+  // matrix row labels use this round's names
+  $("mrowT").textContent=R.name;
+  $("mrowO").textContent=R.junkName;
+  $("mTP").innerHTML=L.TP+'<br><small>caught ✓</small>';
+  $("mFP").innerHTML=L.FP+'<br><small>wrong ✗</small>';
+  $("mFN").innerHTML=L.FN+'<br><small>got away 💨</small>';
+  $("mTN").innerHTML=L.TN+'<br><small>avoided ✓</small>';
+  $("mPrec").textContent=pct(L.precision);
+  $("mRec").textContent=pct(L.recall);
+  $("mAcc").textContent=pct(L.accuracy);
+  $("mF1").textContent=pct(L.f1);
+  $("insight").innerHTML=makeInsight(R,L);
+  const sd=SNAPDOCS[R.name];
+  if(sd){
+    $("snapdocs").style.display="block";
+    $("snapdocs").innerHTML=`<h4>📄 At Snapdocs: ${sd.title}</h4><ul>${sd.bullets.map(b=>`<li>${b}</li>`).join("")}</ul>`;
+  }else{
+    $("snapdocs").style.display="none";
+  }
+  $("next").textContent = (roundIdx===ROUNDS.length-1) ? "See season results ▶" : "Next round ▶";
+  drawChart();
+  show("resOv");
+}
+
+function makeInsight(R,L){
+  const P=L.precision, Rec=L.recall;
+  const n=L.TP+L.FP+L.FN+L.TN;
+  const doNothingAcc = n? (L.TN+L.FP)/n : 0; // catch nothing: all non-targets TN, all targets FN
+  if(R.regime==="precision"){
+    if(L.FP>=2) return `Those <b>${L.FP}</b> wrong catches cost you <b>${R.wFP} each</b>. With fines this steep, a <b>narrower tool</b> (Spear/Rod) aimed where the bass cluster beats casting wide — chase a <b>clean bucket (precision)</b> even if a few bass escape.`;
+    return `Nicely surgical — only <b>${L.FP}</b> wrong fish. When wrong catches are expensive, a clean bucket — high <b>precision (${pct(P)})</b> — is exactly the play, and you nailed it.`;
+  }
+  if(R.regime==="recall"){
+    if(L.FN>=2) return `You let <b>${L.FN}</b> lionfish slip (−${R.wFN} each). Junk is cheap here, so <b>widen the band</b> (Net/Trawl): go for a <b>full bucket (recall)</b> and accept the junk. Misses are what hurt.`;
+    return `You swept up the invaders — recall <b>${pct(Rec)}</b>. When misses are catastrophic, casting wide for a <b>full bucket (recall)</b> is right, junk be damned. Well played.`;
+  }
+  if(R.regime==="imbalance"){
+    return `Look closely: <b>accuracy = ${pct(L.accuracy)}</b> looks amazing — but catching <i>nothing</i> would have scored about <b>${Math.round(doNothingAcc*100)}%</b> accuracy too, as letting most fish go would have been the right call! That's why accuracy lies when one kind of fish is rare. Your real story is <b>precision ${pct(P)}</b> / <b>recall ${pct(Rec)}</b>.`;
+  }
+  // balanced
+  if(P!==null && Rec!==null){
+    if(P>Rec+0.15) return `Clean bucket, half empty: high <b>precision (${pct(P)})</b> but lower <b>recall (${pct(Rec)})</b> — a cautious band that left fish behind. Widen or re-center to catch more.`;
+    if(Rec>P+0.15) return `Full bucket, kind of dirty: high <b>recall (${pct(Rec)})</b> but lower <b>precision (${pct(P)})</b> — you grabbed most of them plus a lot of junk. Narrow down for a cleaner haul.`;
+    return `A balanced haul: precision <b>${pct(P)}</b>, recall <b>${pct(Rec)}</b>. With equal costs, that balance (high <b>F1 ${pct(L.f1)}</b>) is the goal.`;
+  }
+  return `Tune your band and try again to see the tradeoff move.`;
+}
+
+//////////////////// RESULTS CHART (tank snapshot) ////////////////////
+function drawChart(){
+  const c=$("chart"), x=c.getContext("2d"); x.imageSmoothingEnabled=false;
+  // blit the live, post-cast tank (already color-coded by outcome) into the results slot.
+  requestAnimationFrame(()=>x.drawImage(tank,0,0,c.width,c.height));
+}
+
+//////////////////// SUMMARY SCATTER ////////////////////
+function drawScatter(){
+  const c=$("scatter"), x=c.getContext("2d"); x.imageSmoothingEnabled=false;
+  const W=c.width,H=c.height, pad=34;
+  x.fillStyle="#0b2545"; x.fillRect(0,0,W,H);
+  x.strokeStyle="#2e466b"; x.lineWidth=1;
+  for(let i=0;i<=5;i++){
+    const gx=pad+(i/5)*(W-2*pad), gy=pad+(i/5)*(H-2*pad);
+    x.beginPath(); x.moveTo(gx,pad); x.lineTo(gx,H-pad); x.stroke();
+    x.beginPath(); x.moveTo(pad,gy); x.lineTo(W-pad,gy); x.stroke();
+  }
+  x.fillStyle="#9fb2c9"; x.font="10px 'Courier New'";
+  x.fillText("precision →",W/2-30,H-12);
+  x.save(); x.translate(12,H/2+30); x.rotate(-Math.PI/2); x.fillText("recall →",0,0); x.restore();
+  x.fillText("0",pad-8,H-pad+12); x.fillText("1",W-pad-2,H-pad+12); x.fillText("1",pad-16,pad);
+  history.forEach((h,i)=>{
+    if(!h||h.precision===null||h.recall===null) return;
+    const col=ROUNDS[h.idx]?ROUNDS[h.idx].color:"#ffcb3d";
+    const px=pad+h.precision*(W-2*pad), py=(H-pad)-h.recall*(H-2*pad);
+    x.fillStyle=col;
+    x.fillRect(px-4,py-4,8,8);
+    x.fillStyle="#000"; x.fillRect(px-1,py-1,2,2);
+    x.fillStyle=col; x.font="9px 'Courier New'";
+    x.fillText((i+1)+"",px+6,py+3);
+  });
+}
+
+//////////////////// SCREEN HELPERS ////////////////////
+function show(id){ document.querySelectorAll(".overlay").forEach(o=>o.classList.remove("show")); if(id) $(id).classList.add("show"); }
+function hideAll(){ document.querySelectorAll(".overlay").forEach(o=>o.classList.remove("show")); }
+
+//////////////////// LEADERBOARD ////////////////////
+let lbSubmitted=false;
+const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function lbStatus(msg,kind){ const el=$("lbStatus"); if(!msg){el.style.display="none";return;}
+  el.style.display="block"; el.style.color=kind==="err"?"var(--red)":kind==="ok"?"var(--green)":"var(--dim)";
+  el.textContent=msg; }
+async function lbFetch(){
+  const url=`${SUPABASE_URL}/rest/v1/scores?select=name,score&order=score.desc&limit=10`;
+  const r=await fetch(url,{headers:{apikey:SUPABASE_ANON_KEY,Authorization:`Bearer ${SUPABASE_ANON_KEY}`}});
+  if(!r.ok) throw new Error("HTTP "+r.status);
+  return r.json();
+}
+function lbRender(rows){
+  if(!rows.length){ $("lbList").innerHTML='<div class="readout" style="color:var(--dim)">No scores yet — be the first.</div>'; return; }
+  $("lbList").innerHTML=rows.map((row,i)=>{
+    const medal=i===0?"🥇":i===1?"🥈":i===2?"🥉":`<span style="color:var(--dim)">${i+1}.</span>`;
+    return `<div class="readout" style="padding:4px 0; border-bottom:1px dotted var(--line); font-size:13px">`
+      +`<span><b style="color:var(--goldh)">${medal}</b> ${esc(row.name)}</span>`
+      +`<b style="color:var(--gold)">${row.score}</b></div>`;
+  }).join("");
+}
+async function lbLoad(){
+  if(!LB_ON){ $("lbPanel").style.display="none"; return; }
+  $("lbPanel").style.display="block";
+  $("lbEntry").style.display=lbSubmitted?"none":"flex";
+  lbStatus(null);
+  try{ const rows=await lbFetch(); lbRender(rows); lbHighlight(rows); }
+  catch(e){ $("lbList").innerHTML=""; lbStatus("Couldn't load scores.","err"); lbHighlight([]); }
+}
+// Make the Submit button flash when the player's score makes the board.
+function lbHighlight(rows){
+  const btn=$("lbSubmit"), cheer=$("lbCheer");
+  const full=rows.length>=10, lowest=full?Math.min(...rows.map(r=>r.score)):-Infinity;
+  const qualifies=!lbSubmitted && total>0 && total>lowest;
+  if(qualifies){
+    const rank=rows.filter(r=>r.score>total).length+1;
+    btn.classList.add("hot");
+    cheer.style.display="block";
+    cheer.textContent = rank===1 ? "🏆 NEW #1 SCORE — add your name!" : `🔥 High score — you're #${rank}! Claim your spot!`;
+  }else{
+    btn.classList.remove("hot");
+    cheer.style.display="none";
+  }
+}
+async function lbSubmit(){
+  const name=$("lbName").value.trim();
+  if(!name){ lbStatus("Enter your initials first.","err"); $("lbName").focus(); return; }
+  $("lbSubmit").disabled=true; lbStatus("Saving…");
+  try{
+    const r=await fetch(`${SUPABASE_URL}/rest/v1/scores`,{
+      method:"POST",
+      headers:{apikey:SUPABASE_ANON_KEY,Authorization:`Bearer ${SUPABASE_ANON_KEY}`,
+               "Content-Type":"application/json",Prefer:"return=minimal"},
+      body:JSON.stringify({name:name.slice(0,12),score:total})
+    });
+    if(!r.ok) throw new Error("HTTP "+r.status);
+    lbSubmitted=true; $("lbEntry").style.display="none";
+    $("lbSubmit").classList.remove("hot"); $("lbCheer").style.display="none";
+    lbStatus("Saved! 🎣","ok"); lbRender(await lbFetch());
+  }catch(e){ $("lbSubmit").disabled=false; lbStatus("Save failed — try again.","err"); }
+}
+
+//////////////////// EVENTS ////////////////////
+$("start").onclick=()=>{ roundIdx=0; total=0; history=[]; startRound(); };
+$("introGo").onclick=()=> hideAll();
+$("depth").oninput=e=>{ if(cast) return; centerDepth=+e.target.value; updateBandLabel(); };
+$("boatX").oninput=e=>{ if(cast) return; boatX=+e.target.value; updateBandLabel(); };
+$("cast").onclick=doCast;
+tank.onclick=e=>{
+  if(cast) return;
+  const rect=tank.getBoundingClientRect();
+  const y=(e.clientY-rect.top)*(tank.height/rect.height);
+  const px=(e.clientX-rect.left)*(tank.width/rect.width);
+  centerDepth=Math.round(yToDepth(y));
+  boatX=Math.round(pxToX(px));
+  $("depth").value=centerDepth; $("boatX").value=boatX; updateBandLabel();
+};
+$("retry").onclick=()=>{
+  if(roundIdx>0) total-=lastResult.roundScore; $("score").textContent=total;
+  cast=false; $("cast").disabled=false; $("depth").disabled=false; $("boatX").disabled=false;
+  for(const f of fish) f.caught=false;
+  hideAll();
+};
+$("next").onclick=()=>{
+  if(roundIdx===ROUNDS.length-1){
+    $("finalScore").textContent=total; drawScatter(); show("sumOv");
+    lbSubmitted=false; $("lbSubmit").disabled=false; $("lbName").value=""; lbLoad();
+  }else{
+    roundIdx++; startRound();
+  }
+};
+$("lbSubmit").onclick=lbSubmit;
+$("lbName").onkeydown=e=>{ if(e.key==="Enter") lbSubmit(); };
+$("again").onclick=()=>{ roundIdx=0; total=0; history=[]; hideAll(); $("titleOv").classList.add("show"); };
+
+//////////////////// BOOT ////////////////////
+buildTools(); updateBandLabel(); genFish(); draw();
+</script>
+</body>
+</html>
