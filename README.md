@@ -12,10 +12,11 @@ open it in any browser, no build step.
 |---|---|---|
 | The Angler's Dilemma | Precision vs. recall | [`the-anglers-dilemma/`](the-anglers-dilemma/) |
 | Weather Forecaster | Overfitting & the bias–variance tradeoff | [`weather-forecaster/`](weather-forecaster/) |
+| Fool's Gold | Sample size & uncertainty | [`fools-gold/`](fools-gold/) |
 
-Each game keeps its own color identity (the Angler's blue, the Forecaster's green) over
-a shared arcade look — gold frame, Courier, pixel sprites — so the cabinets read as one
-family but are easy to tell apart.
+Each game keeps its own color identity (the Angler's blue, the Forecaster's green, Fool's
+Gold's copper) over a shared arcade look — gold frame, Courier, pixel sprites — so the
+cabinets read as one family but are easy to tell apart.
 
 ## Structure
 
@@ -25,6 +26,8 @@ data-science-arcade/
   the-anglers-dilemma/
     index.html               # the game
   weather-forecaster/
+    index.html               # the game
+  fools-gold/
     index.html               # the game
 ```
 
@@ -56,5 +59,6 @@ To preview locally just open `index.html` — it needs no server.
 
 ## Leaderboard
 
-Weather Forecaster stores high scores in Supabase via the project's **anon public** key
-(embedded in its `index.html`, RLS-protected — safe to ship). Nothing sensitive is stored.
+Games store high scores in Supabase via the project's **anon public** key (embedded in
+each `index.html`, RLS-protected — safe to ship). Nothing sensitive is stored. Each game
+writes to its own table: `scores` (Angler), `weather_scores`, `fools_gold_scores`.

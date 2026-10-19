@@ -11,6 +11,7 @@
     --panel:#121d30; --panel2:#18253b;
     --wx:#3fb950; --wxbg:#122019; --wxline:#2e5a43;
     --ad:#2f9bd6; --adbg:#132033; --adline:#2e466b;
+    --fg:#e08a3c; --fgbg:#1f150a; --fgline:#5a4423;
   }
   *{box-sizing:border-box; margin:0; padding:0}
   html,body{height:100%}
@@ -57,6 +58,11 @@
   .cab.ad .lb{border-color:var(--adline)}
   .cab.ad .concept,.cab.ad h2{color:var(--ad)}
   .cab.ad .coin{background:var(--ad); color:#06121d}
+  /* fool's gold cabinet — copper machine */
+  .cab.fg{border-color:var(--fgline); background:var(--fgbg)}
+  .cab.fg .lb{border-color:var(--fgline)}
+  .cab.fg .concept,.cab.fg h2{color:var(--fg)}
+  .cab.fg .coin{background:var(--fg); color:#1c140a}
   /* coming-soon slot */
   .cab.soon{border-style:dashed; background:transparent; box-shadow:none; color:var(--dim)}
   .cab.soon .concept{color:var(--line)}
@@ -105,15 +111,18 @@
           <div class="coin">▶ Insert Coin</div>
         </a>
 
-        <div class="cab soon">
+        <a class="cab fg" href="fools-gold/index.html">
           <div class="screen">
-            <div class="concept">Coming Soon</div>
-            <div class="big">? ? ?</div>
-            <h2>New Cabinet</h2>
-            <p>Another data-science concept, another game. In the works.</p>
+            <div class="concept">Sample Size · Uncertainty</div>
+            <h2>⛏️ Fool's Gold</h2>
+            <p>Pan a gold claim till you're sure it beats the profit line, then call it — on a tight budget. Learn why a few lucky scoops can fool you.</p>
           </div>
-          <div class="coin">Out of Order</div>
-        </div>
+          <div class="lb">
+            <div class="lbhead">★ High Scores</div>
+            <ol class="lblist" data-table="fools_gold_scores"><li class="lbload">loading…</li></ol>
+          </div>
+          <div class="coin">▶ Insert Coin</div>
+        </a>
 
         <div class="cab soon">
           <div class="screen">

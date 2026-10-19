@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fool's Gold — The Small-Sample Game</title>
+<style>
+  :root{
+    --ink:#1a1206; --night:#1c140a; --panel:#20160c; --panel2:#2a1e10;
+    --gold:#ffcb3d; --goldh:#fff1b8;
+    --copper:#e08a3c; --amber:#ffcf4d; --dirt:#c79a5a;
+    --red:#e5484d; --green:#3fb950; --cyan:#7fd1ff;
+    --line:#5a4423; --text:#f3e9d8; --dim:#c2a988;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html,body{height:100%}
+  body{
+    background:#0e0a04; color:var(--text);
+    font-family:"Courier New",ui-monospace,monospace; font-weight:bold; letter-spacing:.5px;
+    display:flex; align-items:flex-start; justify-content:center; padding:16px; image-rendering:pixelated;
+  }
+  .wrap{width:100%; max-width:980px}
+  h1,h2,h3{text-transform:uppercase; line-height:1.15}
+  .frame{border:4px solid var(--gold); background:var(--panel); box-shadow:0 0 0 4px #0e0a04, 6px 6px 0 0 #000; padding:14px}
+  .row{display:flex; gap:14px; align-items:flex-start}
+  .col{display:flex; flex-direction:column; gap:12px}
+  canvas{display:block; image-rendering:pixelated; background:var(--night); border:4px solid var(--line)}
+  #assay{width:600px; height:420px}
+  .side{flex:1; min-width:290px}
+  .panel{border:4px solid var(--line); background:var(--panel2); padding:12px}
+  .panel h3{color:var(--goldh); font-size:13px; margin-bottom:8px; border-bottom:3px dotted var(--line); padding-bottom:6px}
+  button{
+    font-family:inherit; font-weight:bold; text-transform:uppercase; letter-spacing:1px;
+    color:var(--ink); background:var(--copper); border:none; padding:9px 10px; cursor:pointer; font-size:12px;
+    box-shadow:3px 3px 0 0 #000; transition:transform .03s;
+  }
+  button:active{transform:translate(2px,2px); box-shadow:1px 1px 0 0 #000}
+  button.ghost{background:var(--panel); color:var(--copper); outline:3px solid var(--copper)}
+  button:disabled{opacity:.4; cursor:not-allowed; box-shadow:none}
+  @keyframes lbflash{0%,100%{box-shadow:3px 3px 0 0 #000; transform:scale(1)} 50%{box-shadow:3px 3px 0 0 #000, 0 0 18px 5px rgba(255,203,61,.9); transform:scale(1.07)}}
+  @keyframes cheerpulse{0%,100%{transform:scale(1); opacity:.82} 50%{transform:scale(1.07); opacity:1}}
+  button.hot{animation:lbflash .7s infinite; background:var(--goldh); font-size:16px; padding:12px 16px; outline:3px solid #fff}
+  button.hot:disabled{animation:none}
+  #lbCheer{display:none; color:var(--goldh); font-size:15px; text-align:center; margin-bottom:10px; letter-spacing:1px; text-shadow:2px 2px 0 #000; animation:cheerpulse .7s infinite}
+  .readout{font-size:12px; color:var(--dim); display:flex; justify-content:space-between}
+  .readout b{color:var(--goldh)}
+  .panBtn{width:100%; font-size:16px; padding:14px; background:var(--amber)}
+  .budget{display:flex; justify-content:space-between; align-items:center; font-size:12px; color:var(--dim); margin-top:9px}
+  .budget b{color:var(--amber); font-size:20px}
+  .budget.low b{color:var(--red)}
+  .bandread{border-left:5px solid var(--copper); padding:7px 10px; background:#241603; font-size:11px; color:var(--goldh); line-height:1.5; margin-top:9px; letter-spacing:0; text-transform:none; min-height:38px}
+  /* call + wager buttons */
+  .callrow{display:flex; gap:8px}
+  .callrow button{flex:1; font-size:13px; padding:11px 6px; background:var(--panel); color:var(--text); outline:3px solid var(--line)}
+  .callrow button.rich.sel{background:#13331f; color:var(--green); outline-color:var(--green)}
+  .callrow button.bust.sel{background:#331515; color:#f1a7a9; outline-color:var(--red)}
+  .wagrow{display:flex; gap:7px; margin-top:4px}
+  .wagrow button{flex:1; font-size:11px; padding:9px 4px; background:var(--panel); color:var(--dim); outline:3px solid var(--line); letter-spacing:0}
+  .wagrow button .mult{display:block; font-size:13px; color:var(--text); letter-spacing:1px}
+  .wagrow button.sel{background:#241603; color:var(--amber); outline-color:var(--amber)}
+  .wagrow button.sel .mult{color:var(--amber)}
+  .wagnote{font-size:10px; color:var(--dim); margin-top:6px; letter-spacing:0; text-transform:none; line-height:1.4}
+  .legend{display:flex; flex-wrap:wrap; gap:9px; font-size:10px; color:var(--dim); margin-top:8px}
+  .legend span{display:flex; align-items:center; gap:5px}
+  .sw{width:12px; height:12px; display:inline-block; border:2px solid #000}
+  .cheat p{font-size:11px; line-height:1.55; margin:7px 0; color:var(--text); letter-spacing:0; text-transform:none}
+  .cheat .an{color:var(--dim)}
+  .cheat u{text-decoration-color:var(--copper)}
+  /* overlays */
+  .overlay{position:fixed; inset:0; background:rgba(14,10,4,.88); display:none; align-items:center; justify-content:center; padding:18px; z-index:10}
+  .overlay.show{display:flex}
+  .card{max-width:760px; width:100%; max-height:92vh; overflow:auto}
+  .card h2{color:var(--gold); font-size:20px; margin-bottom:4px}
+  .card .sub{color:var(--dim); font-size:12px; margin-bottom:12px; text-transform:uppercase}
+  .card p{font-weight:bold; font-size:13px; line-height:1.5; color:var(--text); margin:8px 0}
+  .card ul.brief{list-style:none; margin:10px 0; padding:0}
+  .card ul.brief li{font-weight:bold; font-size:13px; line-height:1.45; color:var(--text); padding:5px 0 5px 22px; position:relative; text-transform:none; letter-spacing:0}
+  .card ul.brief li:before{content:"▸"; color:var(--copper); position:absolute; left:3px; top:5px}
+  .card ul.brief b{color:var(--goldh)}
+  .stars{font-size:24px; color:var(--amber); letter-spacing:4px; margin:2px 0 10px; text-shadow:2px 2px 0 #000}
+  .mission .mrow{display:flex; gap:14px; align-items:center; margin-bottom:6px}
+  .bigspr{image-rendering:pixelated; background:#140d04; border:3px solid var(--line); width:150px; height:162px; display:block; margin:0 auto 10px}
+  .tip{border-left:5px solid var(--copper); padding:8px 11px; background:#241603; font-size:12px; color:var(--goldh); line-height:1.5; margin:12px 0; letter-spacing:0; text-transform:none}
+  /* reveal compare cells */
+  .gut{display:flex; gap:12px; margin:12px 0; flex-wrap:wrap}
+  .gutcell{flex:1; min-width:140px; border:4px solid var(--line); background:var(--panel); padding:12px; text-align:center}
+  .gutcell small{display:block; font-size:10px; color:var(--dim); letter-spacing:1px; text-transform:uppercase}
+  .gutcell b{display:block; font-size:34px; margin-top:4px; line-height:1}
+  .gutcell .cap{display:block; font-size:10px; color:var(--dim); margin-top:6px; letter-spacing:0; text-transform:none; min-height:12px}
+  .badge{border:3px solid var(--line); background:var(--panel); padding:8px 11px; margin:4px 0 2px; font-size:12px; text-transform:none; letter-spacing:0; line-height:1.5}
+  .badge.win{border-color:#2d6a33; color:var(--green)}
+  .badge.lose{border-color:#7a2b2e; color:#f1a7a9}
+  .badge b{color:var(--goldh)}
+  .insight{border:4px solid var(--copper); background:#241603; padding:10px; font-size:13px; line-height:1.5; margin:10px 0; text-transform:none; letter-spacing:0}
+  .insight b{color:var(--goldh)}
+  .snapdocs{border:4px solid var(--cyan); background:#0e2233; padding:10px 12px; margin:10px 0; text-transform:none; letter-spacing:0}
+  .snapdocs h4{margin:0 0 6px; color:var(--cyan); font-size:12px; letter-spacing:1px; text-transform:uppercase}
+  .snapdocs ul{list-style:none; margin:0; padding:0}
+  .snapdocs li{font-size:13px; line-height:1.5; color:var(--text); padding:4px 0 4px 20px; position:relative}
+  .snapdocs li:before{content:"▸"; color:var(--cyan); position:absolute; left:3px; top:4px}
+  .snapdocs b{color:#cdeaff}
+  .scorebar{display:flex; gap:14px; font-size:12px; color:var(--dim); margin:8px 0}
+  .scorebar b{color:var(--goldh); font-size:16px}
+  .scoremath{border:3px solid var(--line); background:var(--panel); margin:8px 0 2px}
+  .scoremath table{width:100%; border-collapse:collapse}
+  .scoremath caption{text-align:left; padding:7px 10px 2px; color:var(--goldh); font-size:11px; text-transform:uppercase; letter-spacing:.5px}
+  .scoremath td{padding:4px 10px; font-size:13px; text-transform:none; letter-spacing:0}
+  .scoremath .lbl{color:var(--dim)}
+  .scoremath .calc{text-align:center; color:var(--dim); width:30px}
+  .scoremath .sub{text-align:right; font-weight:bold; width:70px}
+  .scoremath .total td{border-top:3px solid var(--line); padding-top:6px; padding-bottom:7px}
+  .scoremath .total .lbl{color:var(--text); text-transform:uppercase; letter-spacing:.5px}
+  .scoremath .total .sub{color:var(--goldh); font-size:15px}
+  .center{text-align:center}
+  .actions{display:flex; gap:10px; justify-content:center; margin-top:14px; flex-wrap:wrap}
+  .hint{font-size:10px; color:var(--dim); margin-top:6px; letter-spacing:0; text-transform:none}
+  @media(max-width:860px){
+    .row{flex-direction:column}
+    #assay{width:100%; height:auto}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="frame col">
+    <div style="display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px">
+      <h1 style="color:var(--gold); font-size:18px">Fool's Gold<span style="color:var(--text)"> — The Small-Sample Game</span></h1>
+      <div class="readout" style="gap:16px">
+        <span id="claimTag">Claim 1 / 6</span>
+        <span>Pans left <b id="budgetHdr">15</b></span>
+        <span>Gold <b id="score">0</b></span>
+      </div>
+    </div>
+
+    <div class="row">
+      <canvas id="assay" width="600" height="420"></canvas>
+
+      <div class="side col">
+        <div class="panel">
+          <h3>1 · Pan the claim <small style="color:var(--dim);font-weight:bold">(each pan spends 1)</small></h3>
+          <button id="panBtn" class="panBtn">⛏ Pan this claim</button>
+          <div class="budget" id="budgetBox">
+            <span>Pans on this claim: <b id="claimPans" style="color:var(--goldh);font-size:14px">0</b></span>
+            <span>Budget left: <b id="budgetVal">15</b></span>
+          </div>
+          <div class="bandread" id="bandRead">Pan to sample this claim. Your estimate (and how sure you can be) sharpens with every pan.</div>
+        </div>
+
+        <div class="panel">
+          <h3>2 · Call it</h3>
+          <div class="callrow">
+            <button id="callRich" class="rich">⛏ STAKE IT<br><span style="font-size:9px">(it's RICH)</span></button>
+            <button id="callBust" class="bust">🚶 WALK AWAY<br><span style="font-size:9px">(it's BUST)</span></button>
+          </div>
+          <h3 style="margin-top:12px">3 · Wager your confidence</h3>
+          <div class="wagrow">
+            <button id="wagLow" data-w="Low"><span class="mult">×1.0</span>Play safe</button>
+            <button id="wagMed" data-w="Med"><span class="mult">×1.5</span>Fairly sure</button>
+            <button id="wagHigh" data-w="High"><span class="mult">×2.0</span>Bet big</button>
+          </div>
+          <div class="wagnote">Right call pays <b style="color:var(--amber)">+100 × wager</b>. Wrong call costs the same. Bet big only when you've panned enough to be sure.</div>
+        </div>
+
+        <div class="panel">
+          <h3>4 · Lock it in</h3>
+          <button id="lockBtn" style="width:100%; font-size:15px; padding:12px" disabled>🔒 Lock in call</button>
+          <button id="seeResBtn" style="width:100%; font-size:15px; padding:12px; margin-top:8px; display:none">📊 See the assay ▶</button>
+          <div class="hint" id="reviewHint" style="display:none">The claim's true yield is in. See how your read held up.</div>
+          <div class="legend">
+            <span><i class="sw" style="background:#ffcf4d"></i>Each pan</span>
+            <span><i class="sw" style="background:#e08a3c"></i>Your read ±error</span>
+            <span><i class="sw" style="background:#ffcb3d"></i>Profit line</span>
+            <span><i class="sw" style="background:#3fb950"></i>True yield (on reveal)</span>
+          </div>
+        </div>
+
+        <div class="panel cheat">
+          <h3>📖 How to read the pan</h3>
+          <p>Each <u>pan</u> is one noisy sample of what the claim really holds. The <b style="color:var(--copper)">copper band</b> is your running estimate and how unsure you still are — it tightens as you pan more.</p>
+          <p class="an">Band sits <b style="color:var(--green)">clear above</b> the profit line → it's RICH.</p>
+          <p class="an">Band sits <b style="color:#f1a7a9">clear below</b> → it's a BUST.</p>
+          <p class="an">Band still <b>straddles</b> the line → you're not sure yet. One lucky pan can fool you. Pans are scarce across all 6 claims — spend them where you're in doubt.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TITLE -->
+<div class="overlay show" id="titleOv">
+  <div class="card frame center">
+    <canvas class="bigspr" id="titleSpr" width="150" height="162"></canvas>
+    <h2>⛏ Fool's Gold</h2>
+    <div class="sub">A tiny game about Small Samples</div>
+    <p>You're an old prospector working <b>6 claims</b> with a hunch and a pan. Each claim hides a true yield in gold-per-pan. Clear the <b style="color:var(--gold)">profit line</b> and it's worth staking; fall short and it's a <b>bust</b>.</p>
+    <p>You can't see what's down there — you can only <b style="color:var(--amber)">pan</b> to sample it. One pan is noisy; a few pans tighten your read. But pans are scarce: <b style="color:var(--amber)">15 pans across all 6 claims</b>. Spend them where you're in doubt.</p>
+    <ul class="brief" style="text-align:left; max-width:560px; margin:10px auto">
+      <li><b>Call each claim</b> RICH (stake it) or BUST (walk away).</li>
+      <li><b>Wager your confidence</b> — right pays +100 × your bet, wrong costs the same.</li>
+      <li><b>Beware fool's gold:</b> one flashy nugget in a small pan can scream "rich" over a worthless claim.</li>
+    </ul>
+    <div class="actions">
+      <button id="start" style="font-size:15px; padding:12px 22px">Grab your pan ▶</button>
+    </div>
+  </div>
+</div>
+
+<!-- ROUND INTRO -->
+<div class="overlay" id="introOv">
+  <div class="card frame mission" style="text-align:center; padding:34px 28px">
+    <div class="sub" id="introTag" style="margin-bottom:8px">Claim 1 / 6</div>
+    <h1 id="introName" style="font-size:38px; line-height:1.1; color:var(--gold); margin:6px 0 14px; letter-spacing:2px">Claim</h1>
+    <p id="introFlavor" style="max-width:520px; margin:0 auto 20px; color:var(--dim)">A fresh claim. Nobody's panned it yet.</p>
+    <div class="actions" style="justify-content:center"><button id="introGo">Start panning ▶</button></div>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div class="overlay" id="resOv">
+  <div class="card frame">
+    <h2 id="resName">Assay</h2>
+    <div class="stars" id="stars">☆☆☆</div>
+    <div class="sub" id="resSub"></div>
+
+    <div class="gut" id="assayCells"></div>
+
+    <div class="badge" id="callBadge"></div>
+
+    <div class="scorebar">
+      <span>This claim: <b id="roundScore">0</b></span>
+      <span>Total gold: <b id="totalScore">0</b></span>
+    </div>
+
+    <div class="scoremath" id="scoreMath"></div>
+
+    <div class="insight" id="insight"></div>
+
+    <div class="snapdocs" id="snapdocs" style="display:none"></div>
+
+    <div class="actions">
+      <button id="next">Next claim ▶</button>
+    </div>
+  </div>
+</div>
+
+<!-- SUMMARY -->
+<div class="overlay" id="sumOv">
+  <div class="card frame">
+    <h2>🏆 Prospecting season done</h2>
+    <div class="sub">How your reads panned out</div>
+    <div class="scorebar"><span>Final haul: <b id="finalScore">0</b></span></div>
+    <div id="sumRecap" style="margin:10px 0"></div>
+    <div class="insight">
+      <b>The whole lesson:</b> small samples lie. A handful of pans — or a handful of data points — can look convincing and still be wrong, because a small sample swings wildly around the truth. The more you sample, the tighter your estimate gets. The skill is knowing when you've seen <i>enough</i> to trust a call, and saving your scarce pans for the claims that are genuinely in doubt — not the ones that were obvious all along.
+    </div>
+    <div class="panel" id="lbPanel" style="margin-top:14px; display:none">
+      <h3>🏆 High Scores</h3>
+      <div id="lbCheer"></div>
+      <div id="lbEntry" class="row" style="gap:8px; align-items:center; margin-bottom:10px">
+        <input id="lbName" type="text" maxlength="12" placeholder="YOUR INITIALS" autocomplete="off"
+          style="flex:1; min-width:120px; font-family:inherit; font-weight:bold; font-size:13px; text-transform:uppercase; letter-spacing:1px; padding:9px 10px; background:var(--panel); color:var(--text); border:3px solid var(--line); outline:none">
+        <button id="lbSubmit">Submit score</button>
+      </div>
+      <div id="lbStatus" class="readout" style="margin-bottom:8px; display:none"></div>
+      <div id="lbList"></div>
+    </div>
+    <div class="actions"><button id="again">Play again ▶</button></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+//////////////////// CONFIG ////////////////////
+const CH = {w:600, h:420, padL:58, padR:20, padT:26, padB:42};
+const NCLAIMS = 6;            // claims per run
+const BUDGET = 15;            // shared pans across the whole run
+const CLAIM_CAP = 8;          // max pans you may sink into one claim
+const MUSTAR = 4;             // profit line (oz/pan)
+const SD = 2.8;               // ordinary per-pan noise
+const PSPIKE = 0.15;          // chance a pan is a "wild scoop"
+const WILD = 2.5;             // how much fatter the tail is on a wild scoop
+const SD_PRIOR = 3.0;         // spread guess used when you've panned only once
+const WAGER = {Low:1.0, Med:1.5, High:2.0};
+const REVEAL_MS = 900;        // pause on the chart after lock before the assay
+
+// ---- Leaderboard (anon public key only; same project as the other cabinets) ----
+const SUPABASE_URL = "https://lvcavhfmbzrjqsmvjebe.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2Y2F2aGZtYnpyanFzbXZqZWJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE4NDEwOTAsImV4cCI6MjEwNzQxNzA5MH0.GfI7_wUqjMWX9un5mKpeRHPcdYplzLZ1mrgwUq5FKgc";
+const LB_TABLE = "fools_gold_scores";
+const LB_ON = !SUPABASE_URL.includes("YOUR-PROJECT") && !SUPABASE_ANON_KEY.includes("YOUR-ANON");
+
+//////////////////// MATH CORE ////////////////////
+const U=(a,b)=>a+Math.random()*(b-a);
+const pick=arr=>arr[Math.floor(Math.random()*arr.length)];
+function gauss(m,sd){ let u=0,v=0; while(u===0)u=Math.random(); while(v===0)v=Math.random();
+  return m+sd*Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const expo=mean=>-mean*Math.log(Math.random());
+
+//////////////////// CLAIM REGIMES ////////////////////
+// kind: obvious dud / obvious bonanza / ambiguous (near line) / salted (fool's gold trap).
+// The player is NOT told the kind — only the pans reveal it. Weights lock the balance
+// proven in gold_final.js: adaptive panning > flat-spend > one-pan > blind.
+const KINDS = [
+  { id:"dud",     w:0.28, draw:()=>({mu:U(1.0,3.0),  salted:false}) },
+  { id:"bonanza", w:0.28, draw:()=>({mu:U(5.0,7.4),  salted:false}) },
+  { id:"amb",     w:0.34, draw:()=>({mu:U(2.6,5.4),  salted:false}) },
+  { id:"salted",  w:0.10, draw:()=>({mu:U(1.6,3.2),  salted:true })  },
+];
+const KSUM = KINDS.reduce((a,k)=>a+k.w,0);
+function chooseKind(){ let r=Math.random()*KSUM, acc=0; for(const k of KINDS){ acc+=k.w; if(r<=acc) return k; } return KINDS[KINDS.length-1]; }
+
+// one pan of a claim -> a single noisy oz reading
+function panValue(cl){
+  if(cl.salted){
+    const base=Math.max(0, gauss(cl.mu*0.55, 1.1));
+    if(Math.random()<0.22) return base + expo(7.5);   // flashy nugget: fools a small sample
+    return base;
+  }
+  const s = Math.random()<PSPIKE ? SD*WILD : SD;      // occasional wild scoop fattens the tail
+  return Math.max(0, gauss(cl.mu, s));
+}
+
+const CLAIM_NAMES = ["Rattlesnake Gulch","Dead Mule Creek","Whiskey Flat","Lost Dutchman Draw",
+  "Buzzard Bend","Coyote Hollow","Poverty Bar","Jackrabbit Wash","Broken Pick Ridge",
+  "Rusty Spur Claim","Hangtown Bar","Dry Bones Gully","Widow's Peak","Last Chance Creek",
+  "Greenhorn Diggings","Mudhen Slough","Bent Nail Bar","Cactus Jack Claim"];
+
+//////////////////// SPRITES ////////////////////
+const SPR={
+  prospector:[
+    "........HHHHHHHH........",
+    ".....HHHHHHHHHHHHHH.....",
+    "....HHHHHHHHHHHHHHHH....",
+    "...HHHHHHHHHHHHHHHHHH...",
+    "..hHHHHHHHHHHHHHHHHHHh..",
+    ".hhHHHHHHHHHHHHHHHHHHhh.",
+    "hhhhHHHHHHHHHHHHHHHHhhhh",
+    "...hhhhhhhhhhhhhhhhhh...",
+    "......ssssssssssss......",
+    "......ssssssssssss......",
+    "......sseesssseess......",
+    "......ssssssssssss......",
+    ".......sSSSSSSSSs.......",
+    "......bbbbsSSsbbbb......",
+    "......bbbbmmmmbbbb......",
+    ".....bbbbbbbbbbbbbb.....",
+    ".....bBbbbbbbbbbbBb.....",
+    "....bbbbbbbbbbbbbbbb....",
+    "....bbbBbbbbbbbbBbbb....",
+    ".....bbbbbbbbbbbbbb.....",
+    "......bbbbbbbbbbbb......",
+    ".......bbbbbbbbbb.......",
+    "........bbbbbbbb........",
+    "..rrrrrrrrrr.PPPPPPPP...",
+    "..rrrrrrrrrr.pggggggp...",
+    "..RRRRRRRRRR.pPPPPPPp...",
+  ],
+};
+const PAL={
+  prospector:{H:"#c08a3e",h:"#8a5f28",s:"#e8b98f",S:"#c9966a",e:"#2a2018",b:"#d7d1c2",B:"#a49c88",m:"#7a3b2a",r:"#b24a3a",R:"#8a3528",p:"#cfd5dd",P:"#8c929c",g:"#ffcf4d"},
+};
+function drawSprite(ctx,grid,colors,x,y,px,flip){
+  for(let r=0;r<grid.length;r++){ const row=grid[r];
+    for(let c=0;c<row.length;c++){ const ch=row[c];
+      if(ch==="."||ch===" ")continue; const col=colors[ch]; if(!col)continue;
+      const cc=flip?(row.length-1-c):c;
+      ctx.fillStyle=col; ctx.fillRect(Math.round(x+cc*px),Math.round(y+r*px),px,px); } }
+}
+function drawBig(idOrEl,grid,pal){
+  const c=typeof idOrEl==="string"?$(idOrEl):idOrEl; const x=c.getContext("2d"); x.imageSmoothingEnabled=false;
+  x.clearRect(0,0,c.width,c.height);
+  const gw=grid[0].length,gh=grid.length;
+  const px=Math.max(2,Math.floor(Math.min((c.width-10)/gw,(c.height-10)/gh)));
+  const ox=Math.floor((c.width-gw*px)/2),oy=Math.floor((c.height-gh*px)/2);
+  drawSprite(x,grid,pal,ox,oy,px,false);
+}
+
+//////////////////// STATE ////////////////////
+const $=id=>document.getElementById(id);
+const cv=$("assay"), g=cv.getContext("2d"); g.imageSmoothingEnabled=false;
+let board=null, roundIdx=0, total=0, history=[], budget=BUDGET;
+let selCall=null, selWager=null, phase="idle", revealStart=0, lastResult=null;
+
+//////////////////// BOARD ////////////////////
+function genClaim(kind){
+  const cl=kind.draw();
+  cl.kind=kind.id;
+  const truth = cl.mu>MUSTAR;        // RICH if true yield beats the profit line
+  const name = pick(CLAIM_NAMES);
+  return {cl, truth, name, pans:[], yMax:9, pansSpent:0};
+}
+
+// running estimate + uncertainty band from the pans taken so far
+function readEstimate(){
+  const xs=board.pans.map(p=>p.v), n=xs.length;
+  if(n===0) return {n:0, mean:MUSTAR, hw:Infinity, se:Infinity};
+  const mean=xs.reduce((a,b)=>a+b,0)/n;
+  if(n===1) return {n:1, mean, hw:2*SD_PRIOR, se:SD_PRIOR};   // one pan tells you nothing about spread
+  let varr=0; for(const x of xs) varr+=(x-mean)**2; varr=Math.max(0.3, varr/(n-1));
+  const se=Math.sqrt(varr/n);
+  return {n, mean, hw:2*se, se};
+}
+
+//////////////////// DRAW ////////////////////
+function xToPx(i){ return CH.padL + ((i+0.5)/CLAIM_CAP)*(CH.w-CH.padL-CH.padR); }
+function yToPx(v){ const t=v/board.yMax; return CH.h-CH.padB - t*(CH.h-CH.padT-CH.padB); }
+function niceStep(raw){ const p=Math.pow(10,Math.floor(Math.log10(raw||1))); const n=(raw||1)/p; const m=n<1.5?1:n<3?2:n<7?5:10; return m*p; }
+
+function drawAxes(){
+  const step=niceStep(board.yMax/5);
+  g.font="10px 'Courier New'"; g.textAlign="right"; g.textBaseline="middle";
+  for(let t=0; t<=board.yMax+1e-6; t+=step){
+    const py=yToPx(t);
+    g.strokeStyle="rgba(90,68,35,.45)"; g.lineWidth=1; g.setLineDash([]);
+    g.beginPath(); g.moveTo(CH.padL,py); g.lineTo(CH.w-CH.padR,py); g.stroke();
+    g.fillStyle="#c2a988"; g.fillText(t.toFixed(t<10?0:0), CH.padL-6, py);
+  }
+  g.textBaseline="alphabetic";
+  g.strokeStyle="#5a4423"; g.lineWidth=1; g.setLineDash([]);
+  g.beginPath(); g.moveTo(CH.padL,CH.padT); g.lineTo(CH.padL,CH.h-CH.padB); g.lineTo(CH.w-CH.padR,CH.h-CH.padB); g.stroke();
+  g.font="10px 'Courier New'"; g.textAlign="center"; g.fillStyle="#c2a988";
+  for(let d=0;d<CLAIM_CAP;d++){ g.fillText(String(d+1), xToPx(d), CH.h-CH.padB+15); }
+  g.fillText("PAN #", CH.w/2+10, CH.h-6);
+  g.save(); g.translate(14,CH.h/2); g.rotate(-Math.PI/2); g.fillText("GOLD PER PAN (oz)",0,0); g.restore();
+}
+
+function drawProfitLine(){
+  const py=yToPx(MUSTAR);
+  g.strokeStyle="#ffcb3d"; g.lineWidth=2; g.setLineDash([7,5]);
+  g.beginPath(); g.moveTo(CH.padL,py); g.lineTo(CH.w-CH.padR,py); g.stroke(); g.setLineDash([]);
+  g.fillStyle="#ffcb3d"; g.font="bold 10px 'Courier New'"; g.textAlign="left"; g.textBaseline="bottom";
+  g.fillText("PROFIT LINE "+MUSTAR+" oz", CH.padL+4, py-3); g.textBaseline="alphabetic";
+}
+
+function drawBand(est){
+  if(!est.n || !isFinite(est.hw)) return;
+  const lo=clamp(est.mean-est.hw,0,board.yMax), hi=clamp(est.mean+est.hw,0,board.yMax);
+  g.fillStyle="rgba(224,138,60,.20)";
+  g.fillRect(CH.padL, yToPx(hi), CH.w-CH.padL-CH.padR, yToPx(lo)-yToPx(hi));
+  const my=yToPx(clamp(est.mean,0,board.yMax));
+  g.strokeStyle="#e08a3c"; g.lineWidth=2; g.setLineDash([]);
+  g.beginPath(); g.moveTo(CH.padL,my); g.lineTo(CH.w-CH.padR,my); g.stroke();
+  g.fillStyle="#f6c48a"; g.font="bold 10px 'Courier New'"; g.textAlign="right"; g.textBaseline="bottom";
+  g.fillText("YOUR READ "+est.mean.toFixed(1), CH.w-CH.padR-3, my-3); g.textBaseline="alphabetic";
+}
+
+function drawTruth(){
+  const py=yToPx(clamp(board.cl.mu,0,board.yMax));
+  g.strokeStyle=board.truth?"#3fb950":"#e5484d"; g.lineWidth=3; g.setLineDash([]);
+  g.beginPath(); g.moveTo(CH.padL,py); g.lineTo(CH.w-CH.padR,py); g.stroke();
+  g.fillStyle=board.truth?"#8fe6a3":"#f1a7a9"; g.font="bold 11px 'Courier New'"; g.textAlign="right"; g.textBaseline="top";
+  g.fillText("TRUE YIELD "+board.cl.mu.toFixed(1)+" oz", CH.w-CH.padR-3, py+4); g.textBaseline="alphabetic";
+}
+
+// shallow creek bed along the very bottom margin — below the plot, behind the axis labels
+function drawCreek(){
+  const top=CH.h-24, t=performance.now()/1400;
+  const wave=x=>top+Math.sin(x*0.05+t)*1.6;
+  g.save();
+  g.beginPath(); g.moveTo(0,wave(0));
+  for(let x=0;x<=CH.w;x+=12) g.lineTo(x,wave(x));
+  g.lineTo(CH.w,CH.h); g.lineTo(0,CH.h); g.closePath();
+  const wg=g.createLinearGradient(0,top,0,CH.h);
+  wg.addColorStop(0,"rgba(96,116,124,.28)"); wg.addColorStop(1,"rgba(38,54,60,.42)");
+  g.fillStyle=wg; g.fill();
+  g.strokeStyle="rgba(199,154,90,.45)"; g.lineWidth=1.5; g.beginPath();
+  for(let x=0;x<=CH.w;x+=12){ x===0?g.moveTo(x,wave(x)):g.lineTo(x,wave(x)); } g.stroke();
+  // river stones (kept clear of the centered "PAN #" label)
+  for(const [sx,sy,rw,rh] of [[150,CH.h-9,11,6],[240,CH.h-7,7,4],[452,CH.h-9,12,6],[558,CH.h-7,8,4]]){
+    g.fillStyle="#6b5a42"; g.beginPath(); g.ellipse(sx,sy,rw,rh,0,0,Math.PI*2); g.fill();
+    g.fillStyle="rgba(199,154,90,.4)"; g.beginPath(); g.ellipse(sx-rw*0.25,sy-rh*0.3,rw*0.5,rh*0.4,0,0,Math.PI*2); g.fill();
+  }
+  g.restore();
+}
+// the prospector himself, crouched over his pan in the clear bottom-left gutter (x<padL: no chart lines there)
+function drawProspector(){
+  const px=2; drawSprite(g, SPR.prospector, PAL.prospector, 3, CH.h-26*px-2, px, false);
+}
+// one pan reading as a gold fleck; fatter readings render as chunkier nuggets
+function drawNugget(x,y,v){
+  const r=clamp(3.8+v*0.28,4,7);
+  g.beginPath(); g.arc(x,y,r,0,Math.PI*2); g.fillStyle="#e3a62c"; g.fill();
+  g.lineWidth=1.3; g.strokeStyle="#6e4a12"; g.stroke();
+  g.fillStyle="rgba(255,246,205,.92)"; g.beginPath(); g.arc(x-r*0.33,y-r*0.38,r*0.3,0,Math.PI*2); g.fill();
+  if(v>=6){ g.fillStyle="rgba(255,236,170,.5)"; g.beginPath(); g.arc(x+r*0.3,y+r*0.25,r*0.18,0,Math.PI*2); g.fill(); }
+}
+
+function draw(){
+  requestAnimationFrame(draw);
+  const grd=g.createLinearGradient(0,0,0,CH.h); grd.addColorStop(0,"#241a0e"); grd.addColorStop(1,"#140d04");
+  g.fillStyle=grd; g.fillRect(0,0,CH.w,CH.h);
+  drawCreek();
+  drawProspector();
+  if(!board) return;
+  drawAxes();
+  drawProfitLine();
+  const est=readEstimate();
+  drawBand(est);
+  // pans (gold flecks), newest drops in
+  const now=performance.now();
+  board.pans.forEach((p,i)=>{
+    const tx=xToPx(i), ty=yToPx(clamp(p.v,0,board.yMax));
+    const age=now-p.t0, drop=age<260?(1-age/260):0;
+    const py=ty - drop*(ty-CH.padT);
+    drawNugget(tx,py,p.v);
+  });
+  if(phase==="reveal"||phase==="done") drawTruth();
+}
+
+//////////////////// FLOW ////////////////////
+function buildSchedule(){
+  const sched=[];
+  // first claim is a clear one (dud or bonanza) so the mechanic is obvious
+  sched.push(pick([KINDS[0],KINDS[1]]));
+  for(let i=1;i<NCLAIMS;i++) sched.push(chooseKind());
+  return sched;
+}
+let schedule=[];
+
+function startRound(){
+  board=genClaim(schedule[roundIdx]);
+  selCall=null; selWager=null; phase="pick"; lastResult=null;
+  $("claimTag").textContent=`Claim ${roundIdx+1} / ${NCLAIMS}`;
+  $("introTag").textContent=`Claim ${roundIdx+1} / ${NCLAIMS}`;
+  $("introName").textContent=board.name;
+  $("introFlavor").textContent = roundIdx===0
+    ? "Your first claim. Pan it a couple times to learn the ropes — watch the copper band tighten."
+    : pick(["A fresh claim. Nobody's panned it yet.","Looks promising from the trail. Only one way to know.",
+            "The map says maybe. The pan says for sure.","Could be a bonanza. Could be fool's gold."]);
+  syncControls();
+  updateBudgetUI();
+  $("lockBtn").style.display="block"; hideReviewBtn();
+  show("introOv");
+}
+
+function panOnce(){
+  if(phase!=="pick") return;
+  if(budget<=0 || board.pansSpent>=CLAIM_CAP) return;
+  const v=panValue(board.cl);
+  board.pans.push({v, t0:performance.now()});
+  board.pansSpent++; budget--;
+  if(v>board.yMax-0.5) board.yMax=Math.ceil(v*1.08);
+  updateBudgetUI(); syncControls();
+}
+
+function updateBudgetUI(){
+  $("budgetHdr").textContent=budget;
+  $("budgetVal").textContent=budget;
+  $("claimPans").textContent=board?board.pansSpent:0;
+  const low = budget<=(NCLAIMS-roundIdx-1);   // fewer than ~1 pan left per remaining claim
+  $("budgetBox").classList.toggle("low", low);
+}
+
+function bandMessage(est){
+  if(est.n===0) return "No pans yet — you'd be calling this blind. Even one pan beats a pure guess.";
+  if(est.n===1) return "One pan is a single noisy scoop — it can't tell you how much the readings bounce. Pan again to see the spread.";
+  const lo=est.mean-est.hw, hi=est.mean+est.hw;
+  if(lo>MUSTAR) return `Your band (${lo.toFixed(1)}–${hi.toFixed(1)}) sits clear above ${MUSTAR}. This reads RICH — you can bet with confidence.`;
+  if(hi<MUSTAR) return `Your band (${lo.toFixed(1)}–${hi.toFixed(1)}) sits clear below ${MUSTAR}. This reads BUST — safe to walk away.`;
+  return `Your band (${lo.toFixed(1)}–${hi.toFixed(1)}) still straddles the ${MUSTAR} line — you can't be sure yet. Pan more, or bet small.`;
+}
+
+function syncControls(){
+  const est=readEstimate();
+  $("bandRead").textContent=bandMessage(est);
+  const canPan = phase==="pick" && budget>0 && board.pansSpent<CLAIM_CAP;
+  $("panBtn").disabled=!canPan;
+  if(phase==="pick" && budget<=0) $("panBtn").textContent="⛏ Out of pans";
+  else if(phase==="pick" && board.pansSpent>=CLAIM_CAP) $("panBtn").textContent="⛏ Claim tapped out";
+  else $("panBtn").textContent="⛏ Pan this claim";
+  // call buttons
+  $("callRich").classList.toggle("sel", selCall==="RICH");
+  $("callBust").classList.toggle("sel", selCall==="BUST");
+  // wager buttons
+  $("wagLow").classList.toggle("sel", selWager==="Low");
+  $("wagMed").classList.toggle("sel", selWager==="Med");
+  $("wagHigh").classList.toggle("sel", selWager==="High");
+  $("callRich").disabled=$("callBust").disabled=(phase!=="pick");
+  $("wagLow").disabled=$("wagMed").disabled=$("wagHigh").disabled=(phase!=="pick");
+  updateLock();
+}
+function pickCall(c){ if(phase!=="pick") return; selCall=c; syncControls(); }
+function pickWager(w){ if(phase!=="pick") return; selWager=w; syncControls(); }
+function updateLock(){ $("lockBtn").disabled=!(phase==="pick" && selCall && selWager); }
+
+function lockIn(){
+  if(phase!=="pick" || !selCall || !selWager) return;
+  phase="reveal"; revealStart=performance.now();
+  $("panBtn").disabled=true; $("lockBtn").style.display="none";
+  $("callRich").disabled=$("callBust").disabled=true;
+  $("wagLow").disabled=$("wagMed").disabled=$("wagHigh").disabled=true;
+  // scoring
+  const est=readEstimate();
+  const correct = (selCall==="RICH")===board.truth;
+  const mult=WAGER[selWager];
+  const roundScore=Math.round((correct?100:-100)*mult);
+  total+=roundScore; $("score").textContent=total;
+  const starN = !correct?0 : selWager==="High"?3 : selWager==="Med"?2 : 1;
+  lastResult={roundScore, correct, mult, starN, est, call:selCall, wager:selWager,
+              truth:board.truth, mu:board.cl.mu, kind:board.cl.kind, salted:board.cl.salted,
+              pans:board.pansSpent, name:board.name};
+  history.push(lastResult);
+}
+
+//////////////////// RESULTS ////////////////////
+const SNAP = {
+  salted:{title:"Where this bites at Snapdocs", snap:[
+    "A new document classifier looked <b>95% accurate</b> — on a sample of twenty documents. Across millions in production it was barely better than a coin flip.",
+    "A few lucky examples aren't proof. One flashy result can hide a worthless signal — exactly like a nugget in a bad claim."]},
+  amb:{title:"Where this bites at Snapdocs", snap:[
+    "When an early A/B test is close, resist calling a winner on day one. A small sample's lead can vanish as more data arrives.",
+    "Gather enough before you stake a decision on it — a tight read beats a fast one."]},
+  obvious:{title:"Where this bites at Snapdocs", snap:[
+    "Some findings are clear almost immediately; others need far more data to settle.",
+    "Spend your limited analysis time where the answer is still in doubt — not re-confirming what was already obvious."]},
+};
+function snapFor(kind){ if(kind==="salted") return SNAP.salted; if(kind==="amb") return SNAP.amb; return SNAP.obvious; }
+
+function showResults(){
+  const r=lastResult;
+  $("resName").textContent = r.correct ? "Good call!" : "Busted read";
+  $("stars").textContent = "★".repeat(r.starN)+"☆".repeat(3-r.starN);
+  $("resSub").textContent = `${r.name} · you panned it ${r.pans} time${r.pans===1?"":"s"}`;
+
+  const readTxt = r.est.n? r.est.mean.toFixed(1) : "—";
+  $("assayCells").innerHTML = `
+    <div class="gutcell"><small>Your read</small><b style="color:#e08a3c">${readTxt}</b>
+      <span class="cap">${r.est.n? "from "+r.est.n+" pan"+(r.est.n===1?"":"s") : "no pans — blind"}</span></div>
+    <div class="gutcell"><small>True yield</small><b style="color:${r.truth?"#3fb950":"#e5484d"}">${r.mu.toFixed(1)}</b>
+      <span class="cap">profit line is ${MUSTAR}</span></div>
+    <div class="gutcell"><small>Truth</small><b style="color:${r.truth?"#3fb950":"#e5484d"};font-size:22px;margin-top:10px">${r.truth?"RICH":"BUST"}</b>
+      <span class="cap">you called ${r.call}</span></div>`;
+
+  const bd=$("callBadge");
+  bd.className="badge "+(r.correct?"win":"lose");
+  if(r.correct) bd.innerHTML=`✓ You called <b>${r.call}</b> and the claim was <b>${r.truth?"RICH":"BUST"}</b>. Confidence <b>${r.wager}</b> (×${r.mult.toFixed(1)}).`;
+  else bd.innerHTML=`✗ You called <b>${r.call}</b> but the claim was <b>${r.truth?"RICH":"BUST"}</b>. Your <b>${r.wager}</b> wager (×${r.mult.toFixed(1)}) cost you double-down.`;
+
+  $("roundScore").textContent=(r.roundScore>=0?"+":"")+r.roundScore;
+  $("totalScore").textContent=total;
+
+  $("scoreMath").innerHTML = `
+    <table><caption>How this claim scored</caption>
+      <tr><td class="lbl">${r.correct?"Correct call":"Wrong call"}</td><td class="calc"></td><td class="sub">${r.correct?"+100":"−100"}</td></tr>
+      <tr><td class="lbl">Confidence wager (${r.wager})</td><td class="calc">×</td><td class="sub">${r.mult.toFixed(1)}</td></tr>
+      <tr class="total"><td class="lbl">This claim</td><td class="calc">=</td><td class="sub">${(r.roundScore>=0?"+":"")+r.roundScore}</td></tr>
+    </table>`;
+
+  // insight — keyed to what actually happened
+  let ins;
+  if(r.salted && r.call==="RICH"){
+    ins=`<b>Fool's gold.</b> This claim's true yield was only <b>${r.mu.toFixed(1)}</b> — below the line — but a lucky nugget or two in your small pan made it <i>look</i> rich. That's exactly how a tiny sample fools you: one flashy reading drags a short average way up.`;
+  } else if(r.salted && r.call==="BUST"){
+    ins=`<b>You saw through the fool's gold.</b> A nugget or two can make a poor claim (true yield <b>${r.mu.toFixed(1)}</b>) flash rich on a pan or two — you panned enough (or bet carefully) to not be fooled.`;
+  } else if(r.kind==="amb" && r.correct){
+    ins=`<b>Close call, read right.</b> True yield <b>${r.mu.toFixed(1)}</b> sits near the ${MUSTAR} line, so a pan or two could have landed on either side. Enough pans tightened your band until the answer was clear.`;
+  } else if(r.kind==="amb" && !r.correct){
+    ins=`<b>Too close to rush.</b> True yield <b>${r.mu.toFixed(1)}</b> was near the line — a small sample can easily fall on the wrong side. A few more pans would have tightened the band past the line.`;
+  } else if((r.kind==="dud"||r.kind==="bonanza") && r.pans>=4){
+    ins=`<b>Over-panned.</b> This claim (true yield <b>${r.mu.toFixed(1)}</b>) was clearly ${r.truth?"rich":"a bust"} — a pan or two settled it. Those extra pans were scarce fuel you could've saved for a claim that was actually in doubt.`;
+  } else if(r.correct){
+    ins=`<b>Clean read.</b> True yield <b>${r.mu.toFixed(1)}</b> was ${r.truth?"well above":"well below"} the line, so a couple pans was plenty to call it. Nicely efficient.`;
+  } else {
+    ins=`<b>Whiffed a clear one.</b> True yield <b>${r.mu.toFixed(1)}</b> was ${r.truth?"above":"below"} the line${r.est.n?"":" — and you called it blind with no pans"}. A pan or two would have shown it.`;
+  }
+  $("insight").innerHTML=ins;
+
+  const sn=snapFor(r.kind);
+  $("snapdocs").style.display="block";
+  $("snapdocs").innerHTML=`<h4>${sn.title}</h4><ul>${sn.snap.map(s=>`<li>${s}</li>`).join("")}</ul>`;
+
+  $("next").textContent = roundIdx===NCLAIMS-1 ? "Final tally ▶" : "Next claim ▶";
+  show("resOv");
+}
+
+function finishSeason(){
+  $("finalScore").textContent=total;
+  $("sumRecap").innerHTML = history.map((h,i)=>{
+    const col=h.correct?"var(--green)":"#f1a7a9";
+    return `<div class="readout" style="padding:5px 0; border-bottom:1px dotted var(--line); font-size:12px">`
+      +`<span><b style="color:var(--goldh)">${i+1}.</b> ${h.name} — called <b style="color:${col}">${h.call}</b>`
+      +` <span style="color:var(--dim)">(${h.pans} pan${h.pans===1?"":"s"}, ${h.wager})</span></span>`
+      +`<b style="color:${col}">${h.roundScore>=0?"+":""}${h.roundScore}</b></div>`; }).join("");
+  show("sumOv");
+  lbSubmitted=false; $("lbSubmit").disabled=false; $("lbName").value=""; lbLoad();
+}
+
+function hideAll(){ document.querySelectorAll(".overlay").forEach(o=>o.classList.remove("show")); }
+function show(id){ hideAll(); $(id).classList.add("show"); }
+function hideReviewBtn(){ const b=$("seeResBtn"); b.style.display="none"; b.classList.remove("hot"); $("reviewHint").style.display="none"; }
+
+//////////////////// LEADERBOARD (anon public key; LB_ON=false on ship) ////////////////////
+let lbSubmitted=false;
+const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function lbStatus(msg,kind){ const el=$("lbStatus"); if(!msg){el.style.display="none";return;}
+  el.style.display="block"; el.style.color=kind==="err"?"var(--red)":kind==="ok"?"var(--green)":"var(--dim)"; el.textContent=msg; }
+async function lbFetch(){
+  const url=`${SUPABASE_URL}/rest/v1/${LB_TABLE}?select=name,score&order=score.desc&limit=10`;
+  const r=await fetch(url,{headers:{apikey:SUPABASE_ANON_KEY,Authorization:`Bearer ${SUPABASE_ANON_KEY}`}});
+  if(!r.ok) throw new Error("HTTP "+r.status); return r.json();
+}
+function lbRender(rows){
+  if(!rows.length){ $("lbList").innerHTML='<div class="readout" style="color:var(--dim)">No scores yet — be the first.</div>'; return; }
+  $("lbList").innerHTML=rows.map((row,i)=>{
+    const medal=i===0?"🥇":i===1?"🥈":i===2?"🥉":`<span style="color:var(--dim)">${i+1}.</span>`;
+    return `<div class="readout" style="padding:4px 0; border-bottom:1px dotted var(--line); font-size:13px">`
+      +`<span><b style="color:var(--goldh)">${medal}</b> ${esc(row.name)}</span>`
+      +`<b style="color:var(--gold)">${row.score}</b></div>`; }).join("");
+}
+async function lbLoad(){
+  if(!LB_ON){ $("lbPanel").style.display="none"; return; }
+  $("lbPanel").style.display="block"; $("lbEntry").style.display=lbSubmitted?"none":"flex"; lbStatus(null);
+  try{ const rows=await lbFetch(); lbRender(rows); lbHighlight(rows); }
+  catch(e){ $("lbList").innerHTML=""; lbStatus("Couldn't load scores.","err"); lbHighlight([]); }
+}
+function lbHighlight(rows){
+  const btn=$("lbSubmit"), cheer=$("lbCheer");
+  const full=rows.length>=10, lowest=full?Math.min(...rows.map(r=>r.score)):-Infinity;
+  const qualifies=!lbSubmitted && total>0 && total>lowest;
+  if(qualifies){ const rank=rows.filter(r=>r.score>total).length+1;
+    btn.classList.add("hot"); cheer.style.display="block";
+    cheer.textContent = rank===1 ? "🏆 NEW #1 HAUL — add your name!" : `🔥 High score — you're #${rank}! Claim your spot!`;
+  } else { btn.classList.remove("hot"); cheer.style.display="none"; }
+}
+async function lbSubmit(){
+  const name=$("lbName").value.trim();
+  if(!name){ lbStatus("Enter your initials first.","err"); $("lbName").focus(); return; }
+  $("lbSubmit").disabled=true; lbStatus("Saving…");
+  try{
+    const r=await fetch(`${SUPABASE_URL}/rest/v1/${LB_TABLE}`,{method:"POST",
+      headers:{apikey:SUPABASE_ANON_KEY,Authorization:`Bearer ${SUPABASE_ANON_KEY}`,"Content-Type":"application/json",Prefer:"return=minimal"},
+      body:JSON.stringify({name:name.slice(0,12),score:total})});
+    if(!r.ok) throw new Error("HTTP "+r.status);
+    lbSubmitted=true; $("lbEntry").style.display="none"; $("lbSubmit").classList.remove("hot"); $("lbCheer").style.display="none";
+    lbStatus("Saved! ⛏","ok"); lbRender(await lbFetch());
+  }catch(e){ $("lbSubmit").disabled=false; lbStatus("Save failed — try again.","err"); }
+}
+
+//////////////////// EVENTS ////////////////////
+$("start").onclick=()=>{ roundIdx=0; total=0; history=[]; budget=BUDGET; $("score").textContent=0; schedule=buildSchedule(); startRound(); };
+$("introGo").onclick=()=>hideAll();
+$("panBtn").onclick=panOnce;
+$("callRich").onclick=()=>pickCall("RICH");
+$("callBust").onclick=()=>pickCall("BUST");
+$("wagLow").onclick=()=>pickWager("Low");
+$("wagMed").onclick=()=>pickWager("Med");
+$("wagHigh").onclick=()=>pickWager("High");
+$("lockBtn").onclick=lockIn;
+$("seeResBtn").onclick=()=>{ if(phase==="done") showResults(); };
+$("next").onclick=()=>{ if(roundIdx===NCLAIMS-1) finishSeason(); else { roundIdx++; startRound(); } };
+$("lbSubmit").onclick=lbSubmit;
+$("lbName").onkeydown=e=>{ if(e.key==="Enter") lbSubmit(); };
+$("again").onclick=()=>{ hideAll(); $("titleOv").classList.add("show"); };
+
+document.addEventListener("keydown",e=>{
+  const playing=![...document.querySelectorAll(".overlay")].some(o=>o.classList.contains("show"));
+  if(!playing) return;
+  if(phase==="done"){ if(e.key==="Enter"){ e.preventDefault(); showResults(); } return; }
+  if(phase!=="pick") return;
+  if(e.key===" "||e.key==="p"||e.key==="P"){ e.preventDefault(); panOnce(); }
+  else if(e.key==="r"||e.key==="R") pickCall("RICH");
+  else if(e.key==="b"||e.key==="B") pickCall("BUST");
+  else if(e.key==="1") pickWager("Low");
+  else if(e.key==="2") pickWager("Med");
+  else if(e.key==="3") pickWager("High");
+  else if(e.key==="Enter"){ if(!$("lockBtn").disabled){ e.preventDefault(); lockIn(); } }
+});
+
+// reveal finishes -> pause on chart for study, then offer the assay button
+setInterval(()=>{
+  if(phase==="reveal" && performance.now()-revealStart > REVEAL_MS){
+    phase="done";
+    const b=$("seeResBtn"); b.style.display="block"; b.classList.add("hot");
+    $("reviewHint").style.display="block";
+  }
+},60);
+
+//////////////////// BOOT ////////////////////
+drawBig("titleSpr", SPR.prospector, PAL.prospector);
+draw();
+</script>
+</body>
+</html>
