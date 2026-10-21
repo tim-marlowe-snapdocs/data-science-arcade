@@ -339,7 +339,7 @@
 //////////////////// CONFIG ////////////////////
 const MAXD = 60;              // max depth in feet
 const TANK = {w:600, h:420, pad:36}; // canvas logical size + left ruler pad
-const FPX = 2;                // pixel size for fish sprites (smaller = finer, SNES-era look)
+const FPX = 1;                // pixel size for fish sprites (smaller = finer, SNES-era look)
 
 // Leaderboard (Supabase). Paste your Project URL + anon public key below.
 // Leave as-is to run the game with the leaderboard hidden (offline mode).
@@ -434,25 +434,26 @@ const SNAPDOCS = {
 };
 
 //////////////////// SPRITES ////////////////////
-// head faces right. B=body, T=tail, D=dorsal, A=anal, s=stripe, M=mouth,
-// F=spine/fin (lionfish), E=eye white, P=pupil, .=transparent
+// head faces right. L=light upper, B=body, d=dark belly, T=tail/fins, s=stripe,
+// o=spots, b=pale belly (bass), k=scute/earflap, f=pectoral, M=mouth (bass),
+// F=spine (lionfish), m=mouth/barbel, E=eye white, P=pupil, .=transparent
 const SPR = {
-  trout:["...............",".T....DDDD.....","TTT..BBBBBBB...",".TTBBBBBBBBBBB.","TTTBBBsssssBBBE",".TTBBBBBBBBBBBP","TTTBBBBBBBBBBBE",".TT..BBBBBBB...",".T....AAAA....."],
-  bluegill:["....DDDD....","...BBBBBB...","..BBBBBBBB..",".TBBBBBBBBB.","TTBBBBBBBBBE","TTBBBsBBBBPE","TTBBBBBBBBBE",".TBBBBBBBBB.","..BBBBBBBB..","...BBBBBB...","....AAAA...."],
-  bass:["................",".T....DDDDD.....","TTT.BBBBBBBBB...",".TTBBBBBBBBBBBB.","TTTBssssssssBBME",".TTBBBBBBBBBBBMP","TTTBBBBBBBBBBBME",".TTBbbbbbbbbbBB.","TTT.bbbbbbbbb...",".T....AAAAA....."],
-  lionfish:["F.F.F.F.F.F...",".FFFFFFFFFF...","F.BBBBBBBB.F..",".sBsBsBsBsBB..","FBsBsBsBsBsBBE",".sBsBsBsBsBBBP","FBsBsBsBsBsBBE",".sBsBsBsBsBB..","F.BBBBBBBB.F..",".FFFFFFFFFF...","F.F.F.F.F.F..."],
-  sturgeon:["...................","TT...DDD...........",".TBBBBBBBBBBBBB....","TTBBBBBBBBBBBBBBBBE",".TBBBBBBBBBBBBBBBBP","TTBBBBBBBBBBBBBBBBE",".TBBBBBBBBBBBBB....","TT...AAA...........","..................."],
-  junkA:["..........",".T...BBB..","TTBBBBBBBE",".TBBBBBBPE","TTBBBBBBBE",".T...BBB..",".........."],
-  junkB:["........","..BBBB..",".TBBBBBE","TTBBBBPE",".TBBBBBE","..BBBB..","........"],
+  trout:["..............TTTT..........","............TTTTTTT.........","...T.......LLLLLLLLLL.......","..TTT...LLLLLLLLLLLLLLLL....",".TTTTLLLLLLLLLLLLLLLLLLLLE..","TTTT.LLLoLLLLoLLLLLLLLLLLEP.","TTTTsssssssssssssssssssssBBm","TTTT.BBBoBBBBBBBoBBBBBBBBE..",".TTTTBBBBBBBBBBBBBBBBBBdd...","..TTT...dddddddddddddd......","...T.......ddddddddd........","..........TTTTTTT...........","............TTTT............"],
+  bluegill:["........TTT.TTT.........",".......TTTTTTTTT........","......LLLLLLLLLLL.......",".....LLLLLLLLLLLLL......","...T.LLLLLLLLLLLLLEE....","..TTTLLLLLLLLLkkLLEE....",".TTTTBBBBBBBBBkkBBBEP...","TTTT.BBBBBBBBBBBBBBBm...","TTTT.BBBBBBBBBBBBBBBm...",".TTTTBBBBBBBBfBBBBBBm...","..TTTBBBBBBBBffBoooB....","...T.dddddddddfoooo.....",".....ddddddddddooo......","......ddddddddddo.......",".......ddddddddd........","......TTTTTTTTT.........",".......TTT.TTT.........."],
+  bass:["..............TTTTT.........","...........TTTTTTTTT........","....T....LLLLLLLLLLLLL......","..TTT..LLLLLLLLLLLLLLLLL....",".TTTTLLLLLLLLLLLLLLLLLLLLM..","TTTT.LLLLLLLLLLLLLLLLLLMMME.","TTTTBsssssssssssssssssBBMMMP","TTTT.BBBBBBBBBBBBBBBBBBMMME.","TTTTBBBBBBBBBBBBBBBBBBBBM...",".TTTTbbbbbbbbbbbbbbbbbbb....","..TTT.bbbbbbbbbbbbbbbb......","...T...bbbbbbbbbbbbbb.......",".........bbbbbbbbbb.........","..........TTTTTTT...........","............TTTT............"],
+  lionfish:["F...F...F...F...F...F....",".F..F..F..F..F..F..F..F..","..FFFFFFFFFFFFFFFFFFF....","...sBsBsBsBsBsBsBsBB.....","..FsBsBsBsBsBsBsBsBBE....",".F.sBsBsBsBsBsBsBsBBEP...","F..sBsBsBsBsBsBsBsBBBm...",".F.sBsBsBsBsBsBsBsBBE....","..FsBsBsBsBsBsBsBsBB.....",".F.sBsBsBsBsBsBsBsBB.....","F..sBsBsBsBsBsBsBsBBE....",".F.sBsBsBsBsBsBsBsBBEP...","..FsBsBsBsBsBsBsBsBBBm...","...sBsBsBsBsBsBsBsBB.....","..FFFFFFFFFFFFFFFFFFF....",".F..F..F..F..F..F..F..F..","F...F...F...F...F...F....","....F...F...F...F........"],
+  sturgeon:["TTT.....LLLLLLLLLLL.............","TTTT.kkkkkkkkkkkkkkkk...........",".TTTkBBBBBBBBBBBBBBBBBB.........","TTTTBBBBBBBBBBBBBBBBBBBBBBB.....",".TTTBBBBBBBBBBBBBBBBBBBBBBBBBE..","TTTTBBBBBBBBBBBBBBBBBBBBBBBBBEPm",".TTTBBBBBBBBBBBBBBBBBBBBBBBBBEmm","TTTTdddddddddddddddddddddddd....",".TTTdddddddddddddddddddd........","TT..ddd........................."],
+  junkA:[".......TTT.TTT......","......TTTTTTTT......","....LLLLLLLLLLL.....","..T.LLLLLLLLLLLEE...",".TTTBBBBBBBBBBBEP...","TTT.BBBBBBBBBBBBm...","TTT.BBBBBBBBBBBBm...",".TTTBBBBBBBBBBBEP...","..T.dddddddddddEE...","....ddddddddddd.....","......TTTTTTTT......",".......TTT.TTT......"],
+  junkB:["......TTT.TTT...",".....TTTTTTT....","...LLLLLLLLL....",".T.LLLLLLLLLEE..","TTTBBBBBBBBBEP..","TT.BBBBBBBBBBm..","TTTBBBBBBBBBEP..",".T.dddddddddEE..","...ddddddddd....",".....TTTTTTT....","......TTT.TTT..."],
   boat:[".....F.....",".....M.....","...SSMM....","..SSSSMM...",".SSSSSMM...","HHHHHHHHHHH",".hhhhhhhhh."],
 };
 const PAL = {
-  trout:{B:"#8fae63",T:"#5f7a3f",D:"#5f7a3f",A:"#5f7a3f",s:"#e5748a",E:"#ffffff",P:"#0d1b2a"},
-  bluegill:{B:"#6aa6c8",T:"#3f6f8f",D:"#3f6f8f",A:"#e59a3d",s:"#24405c",E:"#ffffff",P:"#0d1b2a"},
-  bass:{B:"#6f8f4a",T:"#4e6a30",D:"#4e6a30",A:"#4e6a30",s:"#31431d",b:"#c2d99a",M:"#243a16",E:"#ffffff",P:"#0d1b2a"},
-  lionfish:{B:"#d6734a",s:"#fff1e0",F:"#c0392b",E:"#ffffff",P:"#0d1b2a"},
-  sturgeon:{B:"#93a07c",T:"#6b7857",D:"#6b7857",A:"#6b7857",E:"#ffffff",P:"#0d1b2a"},
-  junk:{B:"#8aa0b6",T:"#5f7488",D:"#5f7488",A:"#5f7488",E:"#dfe8f0",P:"#0d1b2a"},
+  trout:{L:"#a9c47f",B:"#8fae63",d:"#6f8a4a",T:"#5f7a3f",s:"#e5748a",o:"#4e6a30",E:"#ffffff",P:"#0d1b2a",m:"#3a4a28"},
+  bluegill:{L:"#9cc6e0",B:"#6aa6c8",d:"#5a90b2",T:"#3f6f8f",f:"#4f7fa0",o:"#e59a3d",k:"#24405c",E:"#ffffff",P:"#0d1b2a",m:"#2a4a63"},
+  bass:{L:"#8aa863",B:"#6f8f4a",d:"#4e6a30",b:"#c2d99a",T:"#4e6a30",s:"#31431d",M:"#243a16",E:"#ffffff",P:"#0d1b2a"},
+  lionfish:{B:"#d6734a",L:"#e8906a",s:"#fff1e0",F:"#c0392b",E:"#ffffff",P:"#0d1b2a",m:"#5a1d16"},
+  sturgeon:{L:"#a7b391",B:"#93a07c",d:"#6b7857",T:"#6b7857",k:"#55614a",E:"#ffffff",P:"#0d1b2a",m:"#55614a"},
+  junk:{L:"#a3b6c8",B:"#8aa0b6",d:"#5f7488",T:"#5f7488",E:"#dfe8f0",P:"#0d1b2a",m:"#3a4756"},
   boat:{H:"#6b4a2b",h:"#8a6136",M:"#5a3b1e",S:"#e9eef5",F:"#e5484d"},
 };
 const ICON = {

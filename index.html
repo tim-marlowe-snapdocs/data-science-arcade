@@ -12,6 +12,7 @@
     --wx:#3fb950; --wxbg:#122019; --wxline:#2e5a43;
     --ad:#2f9bd6; --adbg:#132033; --adline:#2e466b;
     --fg:#e08a3c; --fgbg:#1f150a; --fgline:#5a4423;
+    --al:#9b7bff; --albg:#14122b; --alline:#3a2f63;
   }
   *{box-sizing:border-box; margin:0; padding:0}
   html,body{height:100%}
@@ -29,13 +30,14 @@
   .masthead .blurb{color:var(--dim); font-size:12px; line-height:1.6; letter-spacing:0; text-transform:none; margin:12px auto 0; max-width:640px}
   .rule{height:0; border-top:3px dotted var(--line); margin:18px 0}
   .marquee{color:var(--goldh); font-size:11px; letter-spacing:2px; text-align:center; text-transform:uppercase; margin-bottom:16px}
-  .grid{display:grid; grid-template-columns:repeat(2,1fr); gap:16px}
-  @media (max-width:620px){ .grid{grid-template-columns:1fr} }
+  .grid{display:grid; grid-template-columns:repeat(3,1fr); gap:16px}
+  @media (max-width:760px){ .grid{grid-template-columns:1fr} }
   .cab{border:4px solid var(--line); background:var(--panel2); display:flex; flex-direction:column; text-decoration:none; color:var(--text); box-shadow:4px 4px 0 0 #000; transition:transform .04s}
   a.cab:hover{transform:translate(-2px,-2px)}
   .cab .screen{padding:14px 14px 10px; flex:1}
   .cab .concept{font-size:10px; letter-spacing:1px; text-transform:uppercase; margin-bottom:6px}
   .cab h2{font-size:17px; letter-spacing:1px; margin-bottom:8px}
+  .cab canvas.sprite{display:block; margin:6px auto 8px; image-rendering:pixelated}
   .cab p{font-size:11px; line-height:1.55; color:var(--dim); letter-spacing:0; text-transform:none}
   .cab .coin{font-size:12px; letter-spacing:1px; text-transform:uppercase; padding:11px 14px; color:var(--ink)}
   /* leaderboard preview */
@@ -63,6 +65,11 @@
   .cab.fg .lb{border-color:var(--fgline)}
   .cab.fg .concept,.cab.fg h2{color:var(--fg)}
   .cab.fg .coin{background:var(--fg); color:#1c140a}
+  /* aliens cabinet — violet machine */
+  .cab.al{border-color:var(--alline); background:var(--albg)}
+  .cab.al .lb{border-color:var(--alline)}
+  .cab.al .concept,.cab.al h2{color:var(--al)}
+  .cab.al .coin{background:var(--al); color:#0f0a1f}
   /* coming-soon slot */
   .cab.soon{border-style:dashed; background:transparent; box-shadow:none; color:var(--dim)}
   .cab.soon .concept{color:var(--line)}
@@ -89,6 +96,7 @@
           <div class="screen">
             <div class="concept">Precision vs. Recall</div>
             <h2>🎣 The Angler's Dilemma</h2>
+            <canvas class="sprite" data-spr="bluegill" width="120" height="128"></canvas>
             <p>Cast your net to catch the fish you want — without hauling in everything else. Learn why you can't max both at once.</p>
           </div>
           <div class="lb">
@@ -102,6 +110,7 @@
           <div class="screen">
             <div class="concept">Overfitting · Bias–Variance</div>
             <h2>⛈️ Weather Forecaster</h2>
+            <canvas class="sprite" data-spr="raincloud" width="120" height="128"></canvas>
             <p>Three forecasters have models explaining the past week's weather. Pick whose forecast you trust for the next three days of this week.</p>
           </div>
           <div class="lb">
@@ -115,6 +124,7 @@
           <div class="screen">
             <div class="concept">Sample Size · Uncertainty</div>
             <h2>⛏️ Fool's Gold</h2>
+            <canvas class="sprite" data-spr="prospector" width="120" height="128"></canvas>
             <p>Pan a gold claim till you're sure it beats the profit line, then call it — on a tight budget. Learn why a few lucky scoops can fool you.</p>
           </div>
           <div class="lb">
@@ -124,18 +134,8 @@
           <div class="coin">▶ Insert Coin</div>
         </a>
 
-        <div class="cab soon">
-          <div class="screen">
-            <div class="concept">Coming Soon</div>
-            <div class="big">? ? ?</div>
-            <h2>New Cabinet</h2>
-            <p>Another data-science concept, another game. In the works.</p>
-          </div>
-          <div class="coin">Out of Order</div>
-        </div>
-
       </div>
-      <div class="foot">Built for the <b>Snapdocs</b> Customer Success team · zero-dependency HTML · open any cabinet in a browser</div>
+      <div class="foot">Built for <b>Snapdocs</b> · zero-dependency HTML · open any cabinet in a browser</div>
     </div>
   </div>
 
@@ -157,6 +157,30 @@ async function loadLB(ol){
   }catch(e){ ol.innerHTML = '<li class="lbempty">Scores unavailable</li>'; }
 }
 document.querySelectorAll(".lblist[data-table]").forEach(loadLB);
+
+// Cabinet art: one real pixel sprite lifted from each game (grids + palettes verbatim).
+const SPR = {
+  bluegill:["........TTT.TTT.........",".......TTTTTTTTT........","......LLLLLLLLLLL.......",".....LLLLLLLLLLLLL......","...T.LLLLLLLLLLLLLEE....","..TTTLLLLLLLLLkkLLEE....",".TTTTBBBBBBBBBkkBBBEP...","TTTT.BBBBBBBBBBBBBBBm...","TTTT.BBBBBBBBBBBBBBBm...",".TTTTBBBBBBBBfBBBBBBm...","..TTTBBBBBBBBffBoooB....","...T.dddddddddfoooo.....",".....ddddddddddooo......","......ddddddddddo.......",".......ddddddddd........","......TTTTTTTTT.........",".......TTT.TTT.........."],
+  raincloud:["..........ccc...........","........ccccccc.........",".......ccccccccc........",".....cccccccccccccc.....","....cccccccccccccccc....","...cccccccccccccccccc...","..cccccccccccccccccccc..","..gccccccccccccccccccg..","..ggcccccccccccccccggg..","....gggggggggggggggg....","....gggggggggggggggg....","........................","....b....b....b....b....","....b....b....b....b....","........................","..b....b....b....b....b.","..b....b....b....b....b.","........................","....b....b....b....b....","....b....b....b....b...."],
+  prospector:["........HHHHHHHH........",".....HHHHHHHHHHHHHH.....","....HHHHHHHHHHHHHHHH....","...HHHHHHHHHHHHHHHHHH...","..hHHHHHHHHHHHHHHHHHHh..",".hhHHHHHHHHHHHHHHHHHHhh.","hhhhHHHHHHHHHHHHHHHHhhhh","...hhhhhhhhhhhhhhhhhh...","......ssssssssssss......","......ssssssssssss......","......sseesssseess......","......ssssssssssss......",".......sSSSSSSSSs.......","......bbbbsSSsbbbb......","......bbbbmmmmbbbb......",".....bbbbbbbbbbbbbb.....",".....bBbbbbbbbbbbBb.....","....bbbbbbbbbbbbbbbb....","....bbbBbbbbbbbbBbbb....",".....bbbbbbbbbbbbbb.....","......bbbbbbbbbbbb......",".......bbbbbbbbbb.......","........bbbbbbbb........","..rrrrrrrrrr.PPPPPPPP...","..rrrrrrrrrr.pggggggp...","..RRRRRRRRRR.pPPPPPPp..."],
+};
+const PAL = {
+  bluegill:{L:"#9cc6e0",B:"#6aa6c8",d:"#5a90b2",T:"#3f6f8f",f:"#4f7fa0",o:"#e59a3d",k:"#24405c",E:"#ffffff",P:"#0d1b2a",m:"#2a4a63"},
+  raincloud:{c:"#d8e2ee",g:"#8a97a8",b:"#5aa0d8"},
+  prospector:{H:"#c08a3e",h:"#8a5f28",s:"#e8b98f",S:"#c9966a",e:"#2a2018",b:"#d7d1c2",B:"#a49c88",m:"#7a3b2a",r:"#b24a3a",R:"#8a3528",p:"#cfd5dd",P:"#8c929c",g:"#ffcf4d"},
+};
+function drawInto(cv){
+  const grid=SPR[cv.getAttribute("data-spr")], pal=PAL[cv.getAttribute("data-spr")];
+  if(!grid) return;
+  const x=cv.getContext("2d"); x.imageSmoothingEnabled=false; x.clearRect(0,0,cv.width,cv.height);
+  const gw=grid[0].length, gh=grid.length;
+  const px=Math.max(2,Math.floor(Math.min((cv.width-8)/gw,(cv.height-8)/gh)));
+  const ox=Math.floor((cv.width-gw*px)/2), oy=Math.floor((cv.height-gh*px)/2);
+  for(let r=0;r<gh;r++){ const row=grid[r];
+    for(let c=0;c<row.length;c++){ const ch=row[c]; if(ch==="."||ch===" ")continue;
+      const col=pal[ch]; if(!col)continue; x.fillStyle=col; x.fillRect(ox+c*px,oy+r*px,px,px); } }
+}
+document.querySelectorAll("canvas.sprite[data-spr]").forEach(drawInto);
 </script>
 </body>
 </html>
