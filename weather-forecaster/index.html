@@ -192,6 +192,14 @@
     <div class="stars" id="stars">☆☆☆</div>
     <div class="sub" id="resSub"></div>
 
+    <div class="weekreveal" style="display:flex; align-items:center; gap:12px; justify-content:center; margin:12px 0">
+      <canvas id="wxIcon" class="fcface" width="52" height="56"></canvas>
+      <div style="text-align:left">
+        <div id="wxTitle" style="color:var(--gold); font-weight:bold; text-transform:uppercase; letter-spacing:1px"></div>
+        <div id="wxSub" style="color:var(--dim); font-size:12px; text-transform:uppercase"></div>
+      </div>
+    </div>
+
     <p style="color:var(--dim); margin-top:4px">How far each forecaster's projection landed from the <b style="color:var(--green)">3 real coming days</b> — in °F off, lower is better:</p>
     <div class="gut" id="fcCompare"></div>
 
@@ -236,7 +244,7 @@
       <div id="lbStatus" class="readout" style="margin-bottom:8px; display:none"></div>
       <div id="lbList"></div>
     </div>
-    <div class="actions"><button id="again">Play again ▶</button></div>
+    <div class="actions"><button id="again">Play again ▶</button><button class="ghost" onclick="location.href='../index.html'">◀ Back to arcade</button></div>
   </div>
 </div>
 
@@ -396,16 +404,11 @@ function genBoard(regime){
 
 //////////////////// SPRITES ////////////////////
 const SPR={
-  sun:[
-    "....r....",".r.....r.","...ooo...","..ooooo..","r.ooooo.r","..ooooo..","...ooo...",".r.....r.","....r...."],
-  cloud:[
-    ".....ccc.....","...ccccccc...","..ccccccccc..",".ggcccccccgg.","ggggcccccgggg",".ggggggggggg.","............."],
-  raincloud:[
-    ".....ggg.....","...ggggggg...","..ccccccccc..",".ccccccccccc.","ggggcccccgggg",".ggggggggggg.","..b...b...b..",".b...b...b...","..b...b...b..","............."],
-  snow:[
-    "....b....","..b.b.b..","...bbb...","b.bbbbb.b","..bbbbb..","b.bbbbb.b","...bbb...","..b.b.b..","....b...."],
-  therm:[
-    "..ttt..","..t.t..","..trt..","..trt..","..trt..","..trt..","..trt..",".trrrt.","trrrrrt","trrrrrt","trrrrrt",".trrrt.","..ttt.."],
+  sun:[".....................",".r........r........r.","..r.......r.......r..","...r......r......r...","..........o..........",".......ooooooo.......","......ooooooooo......",".....ooooooooooo.....",".....ooooooooooo.....",".....ooooooooooo.....",".rrrooooooooooooorrr.",".....ooooooooooo.....",".....ooooooooooo.....",".....ooooooooooo.....","......ooooooooo......",".......ooooooo.......","..........o..........","...r......r......r...","..r.......r.......r..",".r........r........r.","....................."],
+  cloud:["......................","...........c..........","........ccccccc.......",".......ccccccccc......",".....ccccccccccccc....","...ccccccccccccccccc..","...ccccccccccccccccc..","..ccccccccccccccccccc.","..gcccccccccccccccccg.","..gcccccccccccccccccg.","...ggcccccccccccccgg..","...gggggcccggcccgggg..",".....ggggggggggggg....","........ggg..ggg......"],
+  raincloud:["..........ccc...........","........ccccccc.........",".......ccccccccc........",".....cccccccccccccc.....","....cccccccccccccccc....","...cccccccccccccccccc...","..cccccccccccccccccccc..","..gccccccccccccccccccg..","..ggcccccccccccccccggg..","....gggggggggggggggg....","....gggggggggggggggg....","........................","....b....b....b....b....","....b....b....b....b....","........................","..b....b....b....b....b.","..b....b....b....b....b.","........................","....b....b....b....b....","....b....b....b....b...."],
+  snow:[".....................","..........b..........","..........b..........",".........bbb.........","....b.b...b...b.b....",".....b....b....b.....","....b.b.bbbbb.b.b....",".......b..b..b.......","......b.b.b.b.b......","...b..b..bbb..b..b...",".bbbbbbbbbwbbbbbbbbb.","...b..b..bbb..b..b...","......b.b.b.b.b......",".......b..b..b.......","....b.b.bbbbb.b.b....",".....b....b....b.....","....b.b...b...b.b....",".........bbb.........","..........b..........","..........b..........","....................."],
+  therm:[".....t.....","....ttt....","....trt....","....trt....","....trt....","....trt....","....trt....","....trt....","....trt....","....trt....","....trt....","....trt....","....trt....","....trt....","....trt....","...ttrtt...","...trrrt...","..trrrrrt..","...trrrt...","...ttrtt...",".....t.....","..........."],
   wiggles:[
     "......H.....H.....H.....","...H..H..H..H..H..H..H..","...H.....H.....H.....H..","..H........HH.........H.","..H.....HHHHHHHH......H.","......HHHHHHHHHHHH......","....HHHHHHHHHHHHHHHH....","..HHHHHHHHHHHHHHHHHHHH..","..HHHHHssssssssssHHHHH..",".hhhhHHsossssssosHHhhhh.",".hhhhHooooossoooooHhhhh.",".hhhhHoLLLossoLLLoHhhhh.",".hhhhooLLLooooLLLoohhhh.","..hhhHoLeeosSoLeeoHhhh..","..hhhHooooosSoooooHhhh..","......SsosssSssoss......","......SssssSSnssss......",".......Sssssnssss.......","........bbbbbbbb........",".........bssssb.........",".......mmtmtmtmmm.......","........mmmmmmmm........","........................",".......cccSccSccc.......",".....ccccccSScccccc.....","....cccccccccccccccc...."],
   steve:[
@@ -418,7 +421,7 @@ const PAL={
   heat:{o:"#ff8a3d", r:"#e5484d"},
   cloud:{c:"#d8e2ee", g:"#aab8c8"},
   raincloud:{c:"#d8e2ee", g:"#8a97a8", b:"#5aa0d8"},
-  snow:{b:"#bfe3ff"},
+  snow:{b:"#bfe3ff", w:"#eaf6ff"},
   therm:{t:"#e9eef5", r:"#e5484d"},
   wiggles:{H:"#eef2f6", h:"#aab4bf", s:"#e3b391", S:"#c4906c", o:"#202830", L:"#86e04f", e:"#0e1f33", b:"#7f8a95", n:"#c4906c", m:"#4a1824", t:"#efe6d4", c:"#d7dee6"},
   steve:{H:"#6b4a2f", h:"#4a3220", s:"#e8b98f", S:"#c9966a", w:"#f4f7fb", e:"#223047", b:"#4a3220", n:"#c9966a", m:"#9a4b57", t:"#f2ead6", c:"#cfd8e3", k:"#e5484d"},
@@ -589,6 +592,10 @@ function showResults(){
   $("resName").textContent = myRank===0 ? "Closest call ☀️" : myRank===1 ? "Second closest ⛅" : "Furthest off ⛈";
   $("stars").textContent = stars(myRank);
   $("resSub").textContent = `You trusted ${FC[who].name}`;
+
+  $("wxTitle").textContent = `This was a ${b.regime.title}`;
+  $("wxSub").textContent = b.regime.sub;
+  drawBig("wxIcon", SPR[b.regime.icon[0]], PAL[b.regime.icon[1]]);
 
   $("fcCompare").innerHTML = FC_ORDER.map(k=>{
     const picked=k===who, isbest=k===bw;
