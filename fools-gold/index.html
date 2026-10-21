@@ -387,13 +387,13 @@ function genClaim(kind){
   const cl=kind.draw();
   cl.kind=kind.id;
   const truth = cl.mu>MUSTAR;        // RICH if true yield beats the profit line
-  const name = pick(CLAIM_NAMES);
+  const name = nameBag.length ? nameBag.pop() : pick(CLAIM_NAMES);  // no repeats within a run
   return {cl, truth, name, pans:[], yMax:9, pansSpent:0};
 }
 
 // running estimate + uncertainty band from the pans taken so far
-function readEstimate(){
-  const xs=board.pans.map(p=>p.v), n=xs.length;
+function estFrom(xs){
+  const n=xs.length;
   if(n===0) return {n:0, mean:MUSTAR, hw:Infinity, se:Infinity};
   const mean=xs.reduce((a,b)=>a+b,0)/n;
   if(n===1) return {n:1, mean, hw:2*SD_PRIOR, se:SD_PRIOR};   // one pan tells you nothing about spread
@@ -401,6 +401,7 @@ function readEstimate(){
   const se=Math.sqrt(varr/n);
   return {n, mean, hw:2*se, se};
 }
+function readEstimate(){ return estFrom(board.pans.map(p=>p.v)); }
 
 //////////////////// DRAW ////////////////////
 function xToPx(i){ return CH.padL + ((i+0.5)/CLAIM_CAP)*(CH.w-CH.padL-CH.padR); }
@@ -510,13 +511,16 @@ function draw(){
 
 //////////////////// FLOW ////////////////////
 function buildSchedule(){
+  // fresh shuffled name bag each run so no claim name repeats within a night
+  nameBag = CLAIM_NAMES.slice();
+  for(let i=nameBag.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [nameBag[i],nameBag[j]]=[nameBag[j],nameBag[i]]; }
   const sched=[];
   // first claim is a clear one (dud or bonanza) so the mechanic is obvious
   sched.push(pick([KINDS[0],KINDS[1]]));
   for(let i=1;i<NCLAIMS;i++) sched.push(chooseKind());
   return sched;
 }
-let schedule=[];
+let schedule=[], nameBag=[];
 
 function startRound(){
   board=genClaim(schedule[roundIdx]);
@@ -597,9 +601,20 @@ function lockIn(){
   const roundScore=Math.round((correct?100:-100)*mult);
   total+=roundScore; $("score").textContent=total;
   const starN = !correct?0 : selWager==="High"?3 : selWager==="Med"?2 : 1;
+  // did the player's OWN band clear the profit line and stay clear, yet they kept panning?
+  // grounded in what they could see, not the hidden difficulty — only a true over-pan counts.
+  const xs=board.pans.map(p=>p.v);
+  let clearedAt=0;                                  // start of the final uninterrupted clear streak
+  for(let k=1;k<=xs.length;k++){
+    const e=estFrom(xs.slice(0,k));
+    const clear = (e.mean-e.hw>MUSTAR) || (e.mean+e.hw<MUSTAR);  // whole band on one side of the line
+    if(!clear) clearedAt=0;                          // band (re)crosses the line → not yet settled
+    else if(clearedAt===0) clearedAt=k;              // first pan that settled it and held
+  }
+  const overPanned = clearedAt>0 && (xs.length-clearedAt)>=2;    // 2+ pans after it was already settled
   lastResult={roundScore, correct, mult, starN, est, call:selCall, wager:selWager,
               truth:board.truth, mu:board.cl.mu, kind:board.cl.kind, salted:board.cl.salted,
-              pans:board.pansSpent, name:board.name};
+              pans:board.pansSpent, name:board.name, overPanned};
   history.push(lastResult);
 }
 
@@ -657,8 +672,8 @@ function showResults(){
     ins=`<b>Close call, read right.</b> True yield <b>${r.mu.toFixed(1)}</b> sits near the ${MUSTAR} line, so a pan or two could have landed on either side. Enough pans tightened your band until the answer was clear.`;
   } else if(r.kind==="amb" && !r.correct){
     ins=`<b>Too close to rush.</b> True yield <b>${r.mu.toFixed(1)}</b> was near the line — a small sample can easily fall on the wrong side. A few more pans would have tightened the band past the line.`;
-  } else if((r.kind==="dud"||r.kind==="bonanza") && r.pans>=4){
-    ins=`<b>Over-panned.</b> This claim (true yield <b>${r.mu.toFixed(1)}</b>) was clearly ${r.truth?"rich":"a bust"} — a pan or two settled it. Those extra pans were scarce fuel you could've saved for a claim that was actually in doubt.`;
+  } else if(r.overPanned){
+    ins=`<b>Over-panned.</b> Your band had already cleared the line (true yield <b>${r.mu.toFixed(1)}</b>, clearly ${r.truth?"rich":"a bust"}) with pans to spare — you kept going anyway. Those extra pans were scarce fuel you could've saved for a claim that was actually in doubt.`;
   } else if(r.correct){
     ins=`<b>Clean read.</b> True yield <b>${r.mu.toFixed(1)}</b> was ${r.truth?"well above":"well below"} the line, so a couple pans was plenty to call it. Nicely efficient.`;
   } else {
