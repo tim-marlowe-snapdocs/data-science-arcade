@@ -164,14 +164,14 @@
 <div class="overlay show" id="titleOv">
   <div class="card frame center">
     <h2>⛅ Weather Forecaster</h2>
-    <div class="sub">A tiny game about Overfitting</div>
-    <p>You run the weather desk at W-SNAP, the local TV network. Three forecasters work for you, helping you predict weather for the viewing public. Each round you get <b>7 recorded days</b> of temperatures — a scatter of dots. These forecasters each fit those same dots, then project ahead to <b style="color:var(--green)">3 coming days</b>:</p>
+    <div class="sub">A tiny game about Overfitting and Underfitting</div>
+    <p>You run the weather desk at W-SNAP, the local TV network. Each round, you get <b>7 recorded days</b> of temperatures — a scatter of dots. Your three forecasters each fit those same dots, then project ahead to <b style="color:var(--green)">3 coming days</b>:</p>
     <ul class="brief" style="text-align:left; max-width:560px; margin:10px auto">
       <li><b style="color:#5db0ff">Straight-Line Steve</b> — one ruler-straight line. Never chases a wobble.</li>
-      <li><b style="color:#ff9f45">Trend-Spotter Tess</b> — bends to follow the real trend, but won't snake after every dot.</li>
+      <li><b style="color:#ff9f45">Trend-Spotter Tess</b> — bends to follow a perceived trend, but won't snake after every dot.</li>
       <li><b style="color:#c98bff">Dr. Wiggles</b> — threads a curve through <i>every single dot</i>. Looks flawless on the past.</li>
     </ul>
-    <p><b>Your job:</b> Help your viewers dress for the days ahead by picking the forecaster whose read on the pattern will land closest on the <b>3 coming days nobody has seen yet</b>. Pick the <b>closest</b> forecaster for <b>3 points</b>, the second-closest for <b>1</b>, the furthest-off for <b>0</b>.</p>
+    <p><b>Your job:</b> Help your viewers dress for the days ahead by picking the forecaster whose read on the pattern will land closest on the <b>3 coming days</b>. Pick the <b>closest</b> forecaster for <b>3 points</b>, the second-closest for <b>1</b>, the furthest-off for <b>0</b>.</p>
     <div class="actions">
       <button id="start" style="font-size:15px; padding:12px 22px">Start forecasting ▶</button>
     </div>
@@ -295,7 +295,7 @@ function r2(ys,pred){const mean=ys.reduce((a,b)=>a+b,0)/ys.length;let sr=0,st=0;
 const FC = {
   Steve:   {name:"Straight-Line Steve", tag:"Ruler-straight line", color:"#5db0ff", sprite:"steve", pal:"steve",
             blurb:"One straight line through the week. Never chases a wobble."},
-  Tess:    {name:"Trend-Spotter Tess", tag:"Follows the real trend", color:"#ff9f45", sprite:"tess", pal:"tess",
+  Tess:    {name:"Trend-Spotter Tess", tag:"Follows a perceived trend", color:"#ff9f45", sprite:"tess", pal:"tess",
             blurb:"Bends to follow the underlying trend, but won't snake after every dot."},
   Wiggles: {name:"Dr. Wiggles", tag:"Connects every dot", color:"#c98bff", sprite:"wiggles", pal:"wiggles",
             blurb:"Threads a curve through every recorded dot. Looks perfect on the past."},
