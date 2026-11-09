@@ -64,16 +64,16 @@
   /* section labels + headings */
   .kicker{color:var(--accent); font-size:clamp(11px,1.9vmin,15px); letter-spacing:3px; text-transform:uppercase; margin-bottom:10px}
   .inner h2{color:var(--accent); font-size:clamp(24px,5.4vmin,48px); letter-spacing:2px; text-shadow:3px 3px 0 #000}
-  .lead{color:var(--text); font-size:clamp(15px,2.3vmin,20px); letter-spacing:0; line-height:1.6; margin-top:14px}
-  .sub{color:var(--dim); font-size:clamp(12px,1.9vmin,15px); letter-spacing:0; line-height:1.6; text-transform:none; margin-top:12px}
+  .lead{color:var(--text); font-size:clamp(18px,2.6vmin,23px); letter-spacing:0; line-height:1.6; margin-top:14px}
+  .sub{color:var(--dim); font-size:clamp(15px,2.2vmin,18px); letter-spacing:0; line-height:1.6; text-transform:none; margin-top:12px}
 
   /* "how it works" three beats */
   .beats{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:22px}
   @media (max-width:720px){ .beats{grid-template-columns:1fr} }
   .beat{border:4px solid var(--line); background:var(--panel2); padding:16px 14px; text-align:left; box-shadow:4px 4px 0 #000}
   .beat .n{color:var(--accent); font-size:12px; letter-spacing:2px; text-transform:uppercase}
-  .beat h3{color:var(--text); font-size:16px; letter-spacing:1px; margin:6px 0 8px}
-  .beat p{color:var(--dim); font-size:12.5px; line-height:1.55; letter-spacing:0; text-transform:none}
+  .beat h3{color:var(--text); font-size:17px; letter-spacing:1px; margin:6px 0 8px}
+  .beat p{color:var(--dim); font-size:14.5px; line-height:1.58; letter-spacing:0; text-transform:none}
 
   /* unit divider */
   .divider .sprite{display:block; margin:6px auto 18px; image-rendering:pixelated}
@@ -81,8 +81,8 @@
   /* terms-to-know list */
   .terms{display:grid; gap:9px; margin-top:14px; text-align:left}
   .term{display:flex; gap:12px; align-items:baseline; border:3px solid var(--line); background:var(--panel2); padding:9px 12px; box-shadow:3px 3px 0 #000}
-  .term .w{flex:0 0 auto; width:100px; color:var(--accent); font-size:14px; letter-spacing:1px; text-transform:uppercase}
-  .term .d{flex:1; color:var(--text); font-size:13px; letter-spacing:0; text-transform:none; line-height:1.45}
+  .term .w{flex:0 0 auto; width:100px; color:var(--accent); font-size:15px; letter-spacing:1px; text-transform:uppercase}
+  .term .d{flex:1; color:var(--text); font-size:15.5px; letter-spacing:0; text-transform:none; line-height:1.5}
   .term .d b{color:var(--goldh)}
   .u-wx .term .w,.u-fg .term .w{width:124px}
   @media (max-width:620px){ .term{flex-direction:column; gap:3px} .term .w{width:auto} }
@@ -91,10 +91,10 @@
   .trade{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:18px}
   @media (max-width:720px){ .trade{grid-template-columns:1fr} }
   .trade .col{border:3px solid var(--line); background:var(--panel2); padding:14px; box-shadow:3px 3px 0 #000}
-  .trade .col h4{color:var(--accent); font-size:13px; letter-spacing:1px; text-transform:uppercase; margin-bottom:8px}
-  .trade .col p{color:var(--text); font-size:13.5px; line-height:1.55; letter-spacing:0; text-transform:none}
-  .trade .col .t{color:var(--dim); font-size:11.5px; margin-top:8px; text-transform:none; letter-spacing:0}
-  .hold{margin-top:18px; border-left:4px solid var(--accent); padding:10px 0 10px 14px; color:var(--goldh); font-size:14px; letter-spacing:0; text-transform:none; line-height:1.55}
+  .trade .col h4{color:var(--accent); font-size:14px; letter-spacing:1px; text-transform:uppercase; margin-bottom:8px}
+  .trade .col p{color:var(--text); font-size:15.5px; line-height:1.56; letter-spacing:0; text-transform:none}
+  .trade .col .t{color:var(--dim); font-size:12.5px; margin-top:8px; text-transform:none; letter-spacing:0}
+  .hold{margin-top:18px; border-left:4px solid var(--accent); padding:10px 0 10px 14px; color:var(--goldh); font-size:17px; letter-spacing:0; text-transform:none; line-height:1.56}
   .hold b{color:var(--accent)}
   /* confusion matrix */
   .cmx{display:grid; grid-template-columns:clamp(60px,12vmin,104px) 1fr 1fr auto; gap:8px; margin-top:16px}
@@ -107,14 +107,14 @@
   .cmx-rh{display:flex; align-items:center; justify-content:flex-end; text-align:right; color:var(--accent); font-size:11px; letter-spacing:1px; text-transform:uppercase; line-height:1.25; padding-right:4px}
   .cell{border:3px solid var(--line); background:var(--panel2); padding:11px 12px; box-shadow:3px 3px 0 #000; text-align:left; min-height:76px}
   .cell .otag{display:inline-block; font-size:10px; letter-spacing:1px; text-transform:uppercase; padding:2px 6px; margin-bottom:7px; border:2px solid currentColor}
-  .cell b{display:block; color:var(--text); font-size:13.5px; letter-spacing:0; text-transform:none; line-height:1.4}
-  .cell .sub{display:block; color:var(--dim); font-size:11px; letter-spacing:0; text-transform:none; margin-top:5px}
+  .cell b{display:block; color:var(--text); font-size:15px; letter-spacing:0; text-transform:none; line-height:1.4}
+  .cell .sub{display:block; color:var(--dim); font-size:13px; letter-spacing:0; text-transform:none; margin-top:5px}
   .cell.good{border-color:#3fb950} .cell.good .otag{color:#3fb950}
   .cell.bad{border-color:#e5484d} .cell.bad .otag{color:#e5484d}
   .brace{display:flex; align-items:center; justify-content:center; color:var(--accent); font-size:11px; letter-spacing:1px; text-transform:uppercase}
   .br-recall{padding-left:8px; border-left:4px solid var(--accent)}
   .br-prec{padding-top:7px; border-top:4px solid var(--accent)}
-  .cmx-cap{margin-top:12px; color:var(--text); font-size:12.5px; letter-spacing:0; text-transform:none; line-height:1.5}
+  .cmx-cap{margin-top:12px; color:var(--text); font-size:15px; letter-spacing:0; text-transform:none; line-height:1.54}
   .cmx-cap .k-m{color:var(--accent)} .cmx-cap .k-a{color:var(--goldh)}
   @media (max-width:620px){ .cell b{font-size:12px} .cell{min-height:0} .cmx-ch,.cmx-rh,.brace{font-size:9.5px} }
 
@@ -133,7 +133,7 @@
 
   /* "while you play, watch for" list */
   .watch{list-style:none; margin:16px 0 0; padding:0; text-align:left}
-  .watch li{position:relative; padding:9px 0 9px 32px; color:var(--text); font-size:clamp(13px,2.1vmin,17px); line-height:1.55; letter-spacing:0; text-transform:none}
+  .watch li{position:relative; padding:10px 0 10px 32px; color:var(--text); font-size:clamp(16px,2.5vmin,20px); line-height:1.56; letter-spacing:0; text-transform:none}
   .watch li:before{content:"◉"; position:absolute; left:4px; top:9px; color:var(--accent)}
   .watch b{color:var(--goldh)}
 
@@ -142,17 +142,17 @@
 
   /* closing recap */
   .recap{list-style:none; margin:18px 0 0; padding:0; text-align:left}
-  .recap li{border-left:4px solid var(--accent); padding:10px 0 10px 16px; margin-bottom:12px; color:var(--text); font-size:clamp(13px,2.1vmin,17px); line-height:1.5; letter-spacing:0; text-transform:none}
+  .recap li{border-left:4px solid var(--accent); padding:10px 0 10px 16px; margin-bottom:12px; color:var(--text); font-size:clamp(16px,2.5vmin,20px); line-height:1.54; letter-spacing:0; text-transform:none}
   .recap li b{color:var(--goldh)}
 
   /* debrief: prompts + bridge */
   .prompts{list-style:none; margin:14px 0 0; padding:0; text-align:left}
-  .prompts li{position:relative; padding:8px 0 8px 30px; color:var(--text); font-size:clamp(13px,2vmin,16px); line-height:1.55; letter-spacing:0; text-transform:none}
+  .prompts li{position:relative; padding:9px 0 9px 30px; color:var(--text); font-size:clamp(16px,2.4vmin,19px); line-height:1.56; letter-spacing:0; text-transform:none}
   .prompts li:before{content:"?"; position:absolute; left:4px; top:7px; color:var(--accent); font-weight:bold}
   .bridge{border:4px solid var(--accent); background:rgba(255,255,255,.03); padding:14px 16px; margin-top:18px; text-align:left}
-  .bridge h4{color:var(--accent); font-size:12.5px; letter-spacing:1px; text-transform:uppercase; margin-bottom:8px}
+  .bridge h4{color:var(--accent); font-size:14px; letter-spacing:1px; text-transform:uppercase; margin-bottom:8px}
   .bridge ul{list-style:none; margin:0; padding:0}
-  .bridge li{position:relative; padding:5px 0 5px 20px; color:var(--text); font-size:13px; line-height:1.5; letter-spacing:0; text-transform:none}
+  .bridge li{position:relative; padding:6px 0 6px 20px; color:var(--text); font-size:15.5px; line-height:1.54; letter-spacing:0; text-transform:none}
   .bridge li:before{content:"▸"; position:absolute; left:2px; top:5px; color:var(--accent)}
   .bridge b{color:var(--goldh)}
 
@@ -185,7 +185,7 @@
         <div class="tile u-fg"><canvas class="sprite" data-spr="prospector" width="128" height="118"></canvas><span class="nm">Fool's Gold</span></div>
       </div>
       <div class="dots"></div>
-      <p class="sub">A guided path through the arcade. Each unit primes a single data-science idea, sends you in to <i>play</i> it, then debriefs what you felt — and where it shows up in the work at Snapdocs.</p>
+      <p class="sub">Prime one idea, <i>play</i> it, debrief what you felt — and where it shows up at Snapdocs.</p>
     </div>
   </section>
 
@@ -194,13 +194,13 @@
     <div class="inner">
       <div class="kicker">Curriculum objective</div>
       <h2>Every model is an approximation</h2>
-      <p class="lead">Upon completing this curriculum, you will be able to:</p>
+      <p class="lead">By the end, you'll be able to:</p>
       <ul class="recap">
-        <li><b>Speak to a model's results</b> — follow what the model is actually claiming, and put it in plain terms.</li>
-        <li><b>Question a number</b> — know what to ask before you trust it.</li>
-        <li><b>Decide with the output</b> — make the call on what a model tells you, eyes open to its limits.</li>
+        <li><b>Speak to a model's results</b> — say what it's actually claiming, in plain terms.</li>
+        <li><b>Question a number</b> — know what to ask before trusting it.</li>
+        <li><b>Decide with the output</b> — act on it, eyes open to its limits.</li>
       </ul>
-      <p class="hold">A model is a simplified picture of reality — genuinely useful, but never the whole truth. It can be wrong in places and still be worth trusting. What matters is knowing <i>how far</i> to trust it, and <i>where</i> it breaks down.</p>
+      <p class="hold">A model is a simplified picture of reality — useful, never the whole truth. The skill is knowing <i>how far</i> to trust it, and <i>where</i> it breaks.</p>
     </div>
   </section>
 
@@ -209,13 +209,13 @@
     <div class="inner">
       <div class="kicker">Before you start</div>
       <h2>How this works</h2>
-      <p class="lead">Every unit runs in three beats. Take them in order — the whole thing is about 10–15 minutes per game.</p>
+      <p class="lead">Three beats per unit, in order. About 10–15 minutes each.</p>
       <div class="beats">
-        <div class="beat"><div class="n">1 · Prime</div><h3>Get the idea</h3><p>A couple minutes of primer so the lesson has somewhere to land before you play.</p></div>
-        <div class="beat"><div class="n">2 · Play</div><h3>Feel it</h3><p>Open the game in a new tab, play the entire game through a few times, then come back here. The deck stays put.</p></div>
-        <div class="beat"><div class="n">3 · Debrief</div><h3>Make it stick</h3><p>A couple of questions to chew on — and the real-world version from your own work.</p></div>
+        <div class="beat"><div class="n">1 · Prime</div><h3>Get the idea</h3><p>Two minutes of primer, so the lesson has somewhere to land.</p></div>
+        <div class="beat"><div class="n">2 · Play</div><h3>Feel it</h3><p>Open the game in a new tab, play a few times, come back. The deck stays put.</p></div>
+        <div class="beat"><div class="n">3 · Debrief</div><h3>Make it stick</h3><p>A few questions to chew on — and the real-world version from your work.</p></div>
       </div>
-      <p class="sub">Navigate with ← → arrows (or the buttons below). Press <b>F</b> for fullscreen. Jump anywhere with the bar at the bottom.</p>
+      <p class="sub">← → to navigate (or the buttons below) · <b>F</b> for fullscreen · jump anywhere with the bar at the bottom.</p>
     </div>
   </section>
 
@@ -231,39 +231,57 @@
     </div>
   </section>
 
-  <!-- 3 · PRIME A -->
+  <!-- 3 · PRIME · THE ONE IDEA (light, pre-play — no jargon) -->
   <section class="slide u-ad">
     <div class="inner">
       <div class="kicker">Prime · The one idea</div>
       <h2>You can't catch everything <i>and</i> stay clean</h2>
-      <p class="lead">Three words that run the whole game:</p>
-      <div class="terms">
-        <div class="term"><span class="w">Recall</span><span class="d">Of all the fish you <b>wanted</b>, how many you actually caught.</span></div>
-        <div class="term"><span class="w">Precision</span><span class="d">Of everything <b>in your bucket</b>, how much is the fish you wanted — not junk.</span></div>
-        <div class="term"><span class="w">Accuracy</span><span class="d">How often you're right <b>overall</b> — but it can look great while hiding a pile of misses.</span></div>
-      </div>
-      <p class="lead">Every cast trades these against each other — go wide, or go tight:</p>
+      <p class="lead">Every cast forces the same tension:</p>
       <div class="trade">
         <div class="col">
           <h4>Cast wide</h4>
           <p>You catch almost all the fish you wanted — but your haul is full of junk.</p>
-          <div class="t">High <b>recall</b>, low <b>precision</b>.</div>
         </div>
         <div class="col">
           <h4>Cast tight</h4>
           <p>Your haul is clean — but you let a lot of the fish you wanted swim past.</p>
-          <div class="t">High <b>precision</b>, low <b>recall</b>.</div>
         </div>
+      </div>
+      <p class="hold">No cast is "correct" — each round, the mistake that costs more decides the cast. The words come after you play.</p>
+    </div>
+  </section>
+
+  <!-- 4 · PLAY -->
+  <section class="slide u-ad">
+    <div class="inner">
+      <div class="kicker">Play · Go catch some fish</div>
+      <h2>The Angler's Dilemma</h2>
+      <p class="lead">Play <b>2–3 rounds</b>. Watch the best cast <i>move</i> as the cost of a mistake changes. Come back once you've been graded.</p>
+      <p><a class="playbtn" href="../the-anglers-dilemma/index.html" target="_blank" rel="noopener">▶ Insert Coin</a></p>
+      <p class="opens">Opens in a new tab — this deck stays right here. Flip back when you're done.</p>
+    </div>
+  </section>
+
+  <!-- 5b · DEBRIEF · NAME IT (terms, post-play) -->
+  <section class="slide u-ad">
+    <div class="inner">
+      <div class="kicker">Debrief · The words for it</div>
+      <h2>Three words for what you just did</h2>
+      <p class="lead">You already felt the tradeoff out on the water. Here's the vocabulary the data science team uses:</p>
+      <div class="terms">
+        <div class="term"><span class="w">Recall</span><span class="d">Of all the fish you <b>wanted</b>, how many you actually caught. <i>Casting wide chases recall.</i></span></div>
+        <div class="term"><span class="w">Precision</span><span class="d">Of everything <b>in your bucket</b>, how much is the fish you wanted — not junk. <i>Casting tight protects precision.</i></span></div>
+        <div class="term"><span class="w">Accuracy</span><span class="d">How often you're right <b>overall</b> — but it can look great while hiding a pile of misses.</span></div>
       </div>
     </div>
   </section>
 
-  <!-- 3b · PRIME · READ THE MATRIX -->
+  <!-- 5c · DEBRIEF · READ THE MATRIX (post-play) -->
   <section class="slide u-ad">
     <div class="inner">
-      <div class="kicker">Prime · Read the scoreboard</div>
+      <div class="kicker">Debrief · Read the scoreboard</div>
       <h2>Four outcomes. Two are mistakes.</h2>
-      <p class="lead">Every cast sorts the lake into four piles. The two in <b>red</b> are your mistakes — and each round decides which one is expensive.</p>
+      <p class="lead">Every cast sorted the lake into four piles. The two in <b>red</b> are the mistakes — each round decided which one was expensive.</p>
       <div class="cmx">
         <div class="cmx-corner"></div>
         <div class="cmx-ch c-catch">You caught it</div>
@@ -281,42 +299,16 @@
     </div>
   </section>
 
-  <!-- 4 · PRIME B -->
-  <section class="slide u-ad">
-    <div class="inner">
-      <div class="kicker">Prime · While you play</div>
-      <h2>The costs decide the cast</h2>
-      <p class="lead">There's no single best cast. Each round changes which mistake hurts — and the right one moves with it.</p>
-      <ul class="watch">
-        <li>Each round tells you <b>which mistake is punished</b> this time. Read that first — it decides everything.</li>
-        <li>When a <b>miss</b> is the costly error, cast wide — even though your catch gets dirtier.</li>
-        <li>When <b>junk</b> is the costly error, cast tight — even though a few good fish escape.</li>
-        <li>Your best possible score is never a perfect haul. It's the <b>right balance</b> for this round's stakes.</li>
-      </ul>
-    </div>
-  </section>
-
-  <!-- 5 · PLAY -->
-  <section class="slide u-ad">
-    <div class="inner">
-      <div class="kicker">Play · Go catch some fish</div>
-      <h2>The Angler's Dilemma</h2>
-      <p class="lead">Play <b>2–3 rounds</b>. Watch how the best cast <i>moves</i> when the cost of a mistake changes. Come back once you've been graded at least once.</p>
-      <p><a class="playbtn" href="../the-anglers-dilemma/index.html" target="_blank" rel="noopener">▶ Insert Coin</a></p>
-      <p class="opens">Opens in a new tab — this deck stays right here. Flip back when you're done.</p>
-    </div>
-  </section>
-
   <!-- 6 · DEBRIEF A -->
   <section class="slide u-ad">
     <div class="inner">
       <div class="kicker">Debrief · What you felt</div>
       <h2>What just happened</h2>
       <ul class="prompts">
-        <li>When did you <b>cast wide</b> on purpose? What about that round made it the right call?</li>
-        <li>When did you <b>cast tight</b> instead? What made keeping a clean catch worth letting good fish swim past?</li>
-        <li>Which round was the <b>hardest to score points on</b>? Given that round's scoring <i>and</i> how the fish were distributed, why was it such a tough problem?</li>
-        <li>Casting wide enough to scoop up everything scores perfectly on recall and terribly on precision. When is that a smart trade — and when is it a disaster?</li>
+        <li>When did you <b>cast wide</b> on purpose — and what made it right?</li>
+        <li>When did you <b>cast tight</b> — and what made a clean catch worth the fish that got away?</li>
+        <li>Which round was <b>hardest to score</b>? Think about its scoring <i>and</i> how the fish were spread.</li>
+        <li>Scooping up everything scores perfectly on recall, terribly on precision. When is that smart — and when is it a disaster?</li>
       </ul>
     </div>
   </section>
@@ -354,38 +346,43 @@
   <section class="slide u-wx">
     <div class="inner">
       <div class="kicker">Prime · The one idea</div>
-      <h2>Nailing the past isn't the job — neither is ignoring it</h2>
-      <p class="lead">Every data science model is built on <b>past data</b> to predict <b>future events</b>. Two words for leaning too far either way:</p>
-      <div class="terms">
-        <div class="term"><span class="w">Overfitting</span><span class="d">Hugging every past dot until you've <b>memorized the noise</b>. Looks flawless on history, then whiffs on the days nobody's seen.</span></div>
-        <div class="term"><span class="w">Underfitting</span><span class="d">A read too stiff to bend — <b>missing a real pattern</b> that's genuinely there.</span></div>
+      <h2>Nailing the past isn't the job</h2>
+      <p class="lead">Every forecast leans on days you've seen, to call days you haven't. Lean too far either way and it breaks:</p>
+      <div class="trade">
+        <div class="col">
+          <h4>Hug every past day</h4>
+          <p>You match the history perfectly — then whiff on the days nobody's seen yet.</p>
+        </div>
+        <div class="col">
+          <h4>Play it too safe</h4>
+          <p>Your read is so stiff it can't bend — and it misses a trend that's really there.</p>
+        </div>
       </div>
-      <p class="hold"><b>The job is the balance:</b> fit the past with just enough flexibility to call the future — bend with a real trend, ignore the random wiggles.</p>
+      <p class="hold">The job is the <i>balance</i>: bend with a real trend, ignore the random wiggles — because you're scored on the days you haven't seen yet. The words come after you play.</p>
     </div>
   </section>
 
-  <!-- 10 · PRIME B -->
-  <section class="slide u-wx">
-    <div class="inner">
-      <div class="kicker">Prime · While you play</div>
-      <h2>Complexity isn't the villain</h2>
-      <p class="lead">It's tempting to always pick the simplest forecaster. Don't — sometimes the pattern really does curve.</p>
-      <ul class="watch">
-        <li>A forecaster that <b>hits all seven past dots</b> exactly is a red flag, not a gold star — ask what it did to the three unseen days.</li>
-        <li>But a <b>dead-straight line</b> can be just as wrong when the real trend genuinely bends.</li>
-        <li>Your eye wants to reward whoever fit the past best. <b>Resist it</b> — you're scoring the future, not the history.</li>
-      </ul>
-    </div>
-  </section>
-
-  <!-- 11 · PLAY -->
+  <!-- 10 · PLAY -->
   <section class="slide u-wx">
     <div class="inner">
       <div class="kicker">Play · Call the weather</div>
       <h2>Weather Forecaster</h2>
-      <p class="lead">Play the whole game <b>2–3 times through</b>. Each round, pick the forecaster whose read lands closest on the three days nobody has seen yet. Notice when the complex one wins — and when it faceplants.</p>
+      <p class="lead">Play <b>2–3 rounds</b>. Pick the forecaster that lands closest on the unseen days. Notice when the complex one wins — and when it faceplants.</p>
       <p><a class="playbtn" href="../weather-forecaster/index.html" target="_blank" rel="noopener">▶ Insert Coin</a></p>
       <p class="opens">Opens in a new tab — this deck stays right here. Flip back when you're done.</p>
+    </div>
+  </section>
+
+  <!-- 11b · DEBRIEF · THE WORDS FOR IT (terms, post-play) -->
+  <section class="slide u-wx">
+    <div class="inner">
+      <div class="kicker">Debrief · The words for it</div>
+      <h2>Two words for what you just did</h2>
+      <p class="lead">You already felt both ways to get it wrong out there. Here's the vocabulary the data science team uses:</p>
+      <div class="terms">
+        <div class="term"><span class="w">Overfitting</span><span class="d">Hugging every past dot until you've <b>memorized the noise</b>. Looks flawless on history, then whiffs on the days nobody's seen. <i>The forecaster that nailed all seven dots.</i></span></div>
+        <div class="term"><span class="w">Underfitting</span><span class="d">A read too stiff to bend — <b>missing a real pattern</b> that's genuinely there. <i>The dead-straight line through a real curve.</i></span></div>
+      </div>
     </div>
   </section>
 
@@ -395,9 +392,9 @@
       <div class="kicker">Debrief · What you felt</div>
       <h2>What just happened</h2>
       <ul class="prompts">
-        <li>Which forecaster <i>looked</i> best on the recorded days but landed worst on the coming ones?</li>
-        <li>Was there a round where the <b>most complex</b> forecaster was actually right? What made it right that time?</li>
-        <li>Was there a round where the <b>simplest</b> forecaster was the right call? What made bending the line unnecessary that time?</li>
+        <li>Which forecaster <i>looked</i> best on past days but landed worst on the coming ones?</li>
+        <li>Was there a round where the <b>most complex</b> forecaster was right? What made it right?</li>
+        <li>Was there a round where the <b>simplest</b> forecaster was the right call? What made bending unnecessary?</li>
         <li>How did you tell "that's a real bend" apart from "that's just noise"?</li>
       </ul>
     </div>
@@ -438,37 +435,42 @@
     <div class="inner">
       <div class="kicker">Prime · The one idea</div>
       <h2>A small sample can lie — convincingly</h2>
-      <p class="lead">Pan a handful of samples and one creek looks rich — but a tiny sample can glitter by pure luck. Two words decide whether to trust the number:</p>
-      <div class="terms">
-        <div class="term"><span class="w">Sample size</span><span class="d">How many examples a number rests on. "95% accurate" on <b>twenty</b> documents and on <b>twenty thousand</b> read the same on the page — but only one is real evidence.</span></div>
-        <div class="term"><span class="w">Confidence interval</span><span class="d">The <b>range</b> the true number likely falls in — not a single point. A tiny sample gives a <b>wide</b> band; more evidence narrows it.</span></div>
+      <p class="lead">Pan a few samples and a creek can glitter like a jackpot — purely by luck. Every call forces the same tension:</p>
+      <div class="trade">
+        <div class="col">
+          <h4>Call it early</h4>
+          <p>You save your digging — but a lucky glitter can fool you into a creek that's really empty.</p>
+        </div>
+        <div class="col">
+          <h4>Dig deeper</h4>
+          <p>Each new pan makes the number more trustworthy — but your digging budget runs down fast.</p>
+        </div>
       </div>
-      <p class="hold"><b>The headline number isn't the story.</b> How much evidence sits behind it <i>is</i> the story.</p>
+      <p class="hold">The headline number isn't the story — the <i>range</i> around it is. A few pans give a wide range you can't trust; dig more and it tightens. The words come after you play.</p>
     </div>
   </section>
 
-  <!-- 16 · PRIME B -->
-  <section class="slide u-fg">
-    <div class="inner">
-      <div class="kicker">Prime · While you play</div>
-      <h2>Read the range, dig where it's in doubt</h2>
-      <p class="lead">Every number comes with a <b>confidence interval</b> — a range around it. That range is the real signal.</p>
-      <ul class="watch">
-        <li>A <b>wide</b> range means "not enough evidence yet" — don't stake a decision on it.</li>
-        <li>A <b>narrow</b> range means the result is holding up. That's when a number earns your trust.</li>
-        <li>Your digging budget is limited. Spend it where the answer is <b>genuinely in doubt</b>, not where it's already obvious.</li>
-      </ul>
-    </div>
-  </section>
-
-  <!-- 17 · PLAY -->
+  <!-- 16 · PLAY -->
   <section class="slide u-fg">
     <div class="inner">
       <div class="kicker">Play · Work the creek</div>
       <h2>Fool's Gold</h2>
-      <p class="lead">Play the whole game <b>2–3 times through</b>. Decide how many samples to pull before you call a creek — and watch an early "sure thing" turn to fool's gold. Come back when you've made a few calls.</p>
+      <p class="lead">Play <b>2–3 rounds</b>. Decide how many samples to pull before calling a creek — and watch an early "sure thing" turn to fool's gold.</p>
       <p><a class="playbtn" href="../fools-gold/index.html" target="_blank" rel="noopener">▶ Insert Coin</a></p>
       <p class="opens">Opens in a new tab — this deck stays right here. Flip back when you're done.</p>
+    </div>
+  </section>
+
+  <!-- 17b · DEBRIEF · THE WORDS FOR IT (terms, post-play) -->
+  <section class="slide u-fg">
+    <div class="inner">
+      <div class="kicker">Debrief · The words for it</div>
+      <h2>Two words for what you just did</h2>
+      <p class="lead">You already felt the pull between calling early and digging more. Here's the vocabulary the data science team uses:</p>
+      <div class="terms">
+        <div class="term"><span class="w">Sample size</span><span class="d">How many examples a number rests on. "95% accurate" on <b>twenty</b> documents and on <b>twenty thousand</b> read the same on the page — but only one is real evidence. <i>The number of pans you paid for.</i></span></div>
+        <div class="term"><span class="w">Confidence interval</span><span class="d">The <b>range</b> the true number likely falls in — not a single point. A tiny sample gives a <b>wide</b> band; more evidence narrows it. <i>The spread you watched tighten as you dug.</i></span></div>
+      </div>
     </div>
   </section>
 
@@ -479,9 +481,9 @@
       <h2>What just happened</h2>
       <ul class="prompts">
         <li>Did a creek that looked amazing early turn out to be fool's gold? What tipped you off?</li>
-        <li>Did panning more ever <b>flip</b> a call you were about to make — a "sure thing" into a bust, or the reverse? What does that say about first impressions?</li>
-        <li>How did the <i>confidence interval</i> around a number change your trust in it versus the number alone?</li>
-        <li>Was there a creek you called with <b>too few samples</b> because pans were scarce? Would more evidence have changed the call?</li>
+        <li>Did panning more ever <b>flip</b> a call — a "sure thing" into a bust, or the reverse? What does that say about first impressions?</li>
+        <li>How did the <i>range</i> around a number change your trust versus the number alone?</li>
+        <li>Was there a creek you called with <b>too few samples</b> because pans were scarce? Would more have changed it?</li>
       </ul>
     </div>
   </section>
@@ -523,7 +525,7 @@
   <section class="slide u-gold">
     <div class="inner">
       <h2>Summing up</h2>
-      <p class="lead">Three games, three ideas — and one thread running through all of them:<br>Every model is imperfect, and the skill that matters is asking the right question of it.</p>
+      <p class="lead">Three games, three ideas — one thread through all of them:<br>Every model is imperfect; the skill is asking the right question of it.</p>
       <ul class="recap">
         <li><b>The Angler:</b> which mistake costs more?</li>
         <li><b>Weather Forecaster:</b> is this pattern real, or just noise?</li>
@@ -544,7 +546,7 @@
         <div class="tile u-wx"><canvas class="sprite" data-spr="raincloud" width="128" height="118"></canvas><span class="nm">Weather</span></div>
         <div class="tile u-fg"><canvas class="sprite" data-spr="prospector" width="128" height="118"></canvas><span class="nm">Fool's Gold</span></div>
       </div>
-      <p class="sub">The arcade never closes — come back and replay any cabinet whenever you want. The machines are always on.</p>
+      <p class="sub">The arcade never closes — replay any cabinet whenever you want. The machines are always on.</p>
       <p><a class="playbtn" href="../index.html" target="_blank" rel="noopener">&#9654; Back to the Arcade</a></p>
     </div>
   </section>
@@ -552,7 +554,7 @@
 </div>
 
 <div class="hint">← → navigate · F fullscreen</div>
-<div class="counter" id="counter">01 / 21</div>
+<div class="counter" id="counter">01 / 24</div>
 <div class="arrow prev" id="prev">◀</div>
 <div class="arrow next" id="next">▶</div>
 <div class="rail" id="rail"></div>
