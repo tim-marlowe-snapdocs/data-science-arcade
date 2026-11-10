@@ -437,14 +437,30 @@ function drawProfitLine(){
 
 function drawBand(est){
   if(!est.n || !isFinite(est.hw)) return;
-  const lo=clamp(est.mean-est.hw,0,board.yMax), hi=clamp(est.mean+est.hw,0,board.yMax);
-  g.fillStyle="rgba(224,138,60,.20)";
-  g.fillRect(CH.padL, yToPx(hi), CH.w-CH.padL-CH.padR, yToPx(lo)-yToPx(hi));
+  const loRaw=est.mean-est.hw, hiRaw=est.mean+est.hw;
+  const lo=clamp(loRaw,0,board.yMax), hi=clamp(hiRaw,0,board.yMax);
+  const xL=CH.padL, xR=CH.w-CH.padR, cx=(xL+xR)/2;
+  const yHi=yToPx(hi), yLo=yToPx(lo);
+  g.fillStyle="rgba(224,138,60,.22)";
+  g.fillRect(xL, yHi, xR-xL, yLo-yHi);
+  // dashed boundary lines give the band clear edges even when it's very wide
+  g.strokeStyle="#e08a3c"; g.lineWidth=2; g.setLineDash([6,4]);
+  g.beginPath(); g.moveTo(xL,yHi); g.lineTo(xR,yHi); g.stroke();
+  g.beginPath(); g.moveTo(xL,yLo); g.lineTo(xR,yLo); g.stroke();
+  g.setLineDash([]);
+  // when the true range spills past the chart, say so — a huge range IS the lesson
+  g.fillStyle="#e08a3c"; g.font="bold 11px 'Courier New'"; g.textAlign="center";
+  if(hiRaw>board.yMax+1e-6){ g.textBaseline="top"; g.fillText("▲ RANGE RUNS OFF-CHART ▲", cx, yHi+3); }
+  if(loRaw<-1e-6){ g.textBaseline="bottom"; g.fillText("▼ RANGE RUNS OFF-CHART ▼", cx, yLo-3); }
+  g.textBaseline="alphabetic";
+  // label the band so it reads as a range, not a background tint
+  g.fillStyle="#f6c48a"; g.font="bold 10px 'Courier New'"; g.textAlign="left"; g.textBaseline="bottom";
+  g.fillText("YOUR RANGE", xL+4, yHi-3); g.textBaseline="alphabetic";
   const my=yToPx(clamp(est.mean,0,board.yMax));
   g.strokeStyle="#e08a3c"; g.lineWidth=2; g.setLineDash([]);
-  g.beginPath(); g.moveTo(CH.padL,my); g.lineTo(CH.w-CH.padR,my); g.stroke();
+  g.beginPath(); g.moveTo(xL,my); g.lineTo(xR,my); g.stroke();
   g.fillStyle="#f6c48a"; g.font="bold 10px 'Courier New'"; g.textAlign="right"; g.textBaseline="bottom";
-  g.fillText("YOUR READ "+est.mean.toFixed(1), CH.w-CH.padR-3, my-3); g.textBaseline="alphabetic";
+  g.fillText("YOUR READ "+est.mean.toFixed(1), xR-3, my-3); g.textBaseline="alphabetic";
 }
 
 function drawTruth(){

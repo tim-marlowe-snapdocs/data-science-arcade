@@ -117,7 +117,7 @@
     <div style="display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px">
       <h1 style="color:var(--gold); font-size:18px">Weather Forecaster<span style="color:var(--text)"> — The Overfitting Game</span></h1>
       <div class="readout" style="gap:16px">
-        <span id="roundTag">Round 1 / 10</span>
+        <span id="roundTag">Round 1 / 5</span>
         <span>Pick: <b id="pickName">—</b></span>
         <span>Score <b id="score">0</b></span>
       </div>
@@ -258,7 +258,7 @@ const FUT = [7,8,9];         // coming days (extrapolated / revealed after lock)
 const NFUT = FUT.length;
 const XMAX = 9;              // right edge of the timeline
 const REVEAL_MS = 340;        // per-day reveal pace (only 3 coming days)
-const NROUNDS = 7;
+const NROUNDS = 5;
 const TESS_SLOPE_CAP = 2.5;   // max °/day Tess may continue her edge trend into the future
 const TESS_CURVE_K = 0.8;     // curvature saturation scale, as a multiple of the week's range
 const TESS_CURVE_FLOOR = 4;   // minimum curvature saturation (°) when the week's range is tiny
